@@ -1,4 +1,5 @@
 {% load i18n %}
+
 {% with table.needs_form_wrapper as needs_form_wrapper %}
 <div class="table_wrapper">
   {% if needs_form_wrapper %}<form action="{{ table.get_absolute_url }}" method="POST">{% csrf_token %}{% endif %}
@@ -74,5 +75,4 @@
 {% endblock table %}
   {% endwith %}
   {% if needs_form_wrapper %}</form>{% endif %}
-</div>
 {% endwith %}

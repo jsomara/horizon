@@ -1,3 +1,4 @@
+
 /* Namespace for core functionality related to modal dialogs.
  *
  * Modals in Horizon are treated as a "stack", e.g new ones are added to the

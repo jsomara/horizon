@@ -703,27 +703,7 @@ form label {
     font-weight: bold;
 }
 
-.modal {
-    width: 700px;
-    max-height: none; /* Prevents large modals from scrolling unnecessarily */
-    top: 80px;
-    margin-top: 0;
-    position: absolute;
-}
 
-.modal.loading {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.modal.loading p {
-  text-align: center;
-  position: absolute;
-  bottom: 0;
-  width: 150px;
-}
 
 .datepicker {
     margin-top: 10px;
@@ -758,18 +738,7 @@ form.horizontal fieldset {
     width: 100%;
 }
 
-.modal-body {
-  overflow-y: visible;
-  max-height: none;
-}
 
-.modal-body table {
-  margin-bottom: 30px;
-}
-
-.modal-body ~ hr {
-  margin-bottom: 0;
-}
 
 .static_page {
   float: left;
@@ -823,6 +792,42 @@ form.horizontal fieldset {
     height: 0;
     padding: 0;
     margin: 0;
+}
+
+
+.modal {
+    width: 700px;
+    max-height: none; *//* Prevents large modals from scrolling unnecessarily *//*
+    top: 80px;
+    margin-top: 0;
+    position: absolute;
+}
+
+.modal.loading {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.modal.loading p {
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  width: 150px;
+}
+
+.modal-body {
+  overflow-y: visible;
+  max-height: none;
+}
+
+.modal-body table {
+  margin-bottom: 30px;
+}
+
+.modal-body ~ hr {
+  margin-bottom: 0;
 }
 
 .modal-body fieldset {

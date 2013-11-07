@@ -129,7 +129,8 @@ TEMPLATE_DIRS = (
 
 STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
 )
 
 COMPRESS_PRECOMPILERS = (
@@ -160,6 +161,7 @@ INSTALLED_APPS = (
     'openstack_dashboard.dashboards.settings',
     'openstack_auth',
     'openstack_dashboard.dashboards.router',
+    'djangular'
 )
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
