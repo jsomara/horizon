@@ -13,11 +13,12 @@
     <script type="text/javascript" src="{{ STATIC_URL }}horizon/tests/modals.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}horizon/tests/templates.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}horizon/tests/tables.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}horizon/tests/membership.js"></script>
     {% comment %}End test modules.{% endcomment %}
 
     {% include "horizon/_scripts.html" %}
   </head>
-  <body>
+  <body ng-app="horizonApp">
     <h1 id="qunit-header">Horizon JavaScript Tests</h1>
     <h2 id="qunit-banner"></h2>
     <div id="qunit-testrunner-toolbar"></div>
