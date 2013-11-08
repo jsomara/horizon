@@ -29,7 +29,7 @@ LOGOUT_URL = '/auth/logout/'
 LOGIN_REDIRECT_URL = '/'
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 TESTSERVER = 'http://testserver'
 

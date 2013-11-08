@@ -40,7 +40,6 @@ test("Ingroup is not in group", function() {
 test("Convert roles loads roles", function() {
     var roles = { 1234: 'role_test' };
     var converted = ctrlScope.convertRoles(roles);
-    console.log(converted);
     ok(converted.length === 1, "Roles list correct size");
     ok(converted[0].id === '1234', "Roles munged OK");
 });
