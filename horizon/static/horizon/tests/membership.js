@@ -1,18 +1,40 @@
-horizon.addInitFunction(function () {
-    var injector = angular.injector(['ng', 'horizonApp']);
+var ctrl, ctrlScope, injector, horizonMock;
 
-    var init = {
-        setup: function() {
-            this.$scope = injector.get('$rootScope').$new();
-        }
-    };
+module("angular membership", {
+    setup: function () {
+        horizon.membership.init_angular('test_slug');
+        var appModule = angular.module('horizonApp');
+        injector = angular.injector(['ng', 'horizonApp']);
+
+        //horizonMock = injector.get('horizon')
+
+        ctrlScope = injector.get('$rootScope').$new();
+        ctrl = injector.get('$controller')('MembershipController', { $scope: ctrlScope, horizon: horizon });
+    },
+    teardown: function () {
+
+    }
+});
+
+test("Should instantiate controller", function () {
+    ctrlScope.loadDataFromDOM('test_slug');
+    ok( ctrlScope.available.length === ctrlScope.members.length, "PASS");
+});
+
+/*
+horizon.addInitFunction(function () {
+
+    module(
+    this.$scope = injector.get('$rootScope').$new();
 
     module("Membership (horizon.membership.js)", init);
+
+    bs = $('#bootstrap_me');
+    angular.bootstrap(bs, ['horizonApp']);
 
     test( "hello test", function() {
       ok( 1 === 1, "Passed!" );
     });
-
     // tests
 
 
@@ -45,5 +67,6 @@ horizon.addInitFunction(function () {
     //     var $filter = injector.get('$filter');
     //     equal(6, $filter('myfilter')(1));
     // });
-
 });
+
+*/
