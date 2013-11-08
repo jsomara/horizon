@@ -266,7 +266,7 @@ horizon.membership = {
             function getRoleMembers(members, role_id) {
                 var role_members = [];
                 angular.forEach(members, function(member) {
-                    if(member.roles.indexOf(role_id) > -1){
+                    if($scope.hasRole(member, role_id)) {
                         role_members.push(member.id);
                     }
                 });
@@ -289,7 +289,7 @@ horizon.membership = {
                 var name = "";
                 var count = 0;
                 angular.forEach($scope.all_roles, function(role) {
-                    if(member.roles.indexOf(role.id) >= 0) {
+                    if($scope.hasRole(member, role.id)) {
                         if(count < 2) {
                             if(count > 0) {
                                 name += ", "
