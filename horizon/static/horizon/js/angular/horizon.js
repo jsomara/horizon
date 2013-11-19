@@ -19,5 +19,6 @@ var horizonApp = angular.module('hz', ['hz.conf', 'hz.utils', 'ngCookies'])
           $cookieStore.put(key, value);
         });
       };
-    }]);
+    }])
+    .constant('horizon', horizon);
 
