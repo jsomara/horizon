@@ -70,7 +70,7 @@
                           <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu role_dropdown clearfix">
-                          <li data-role-id="role.id" ng-class="{true: 'selected', false: '' }[hasRole(member, role.id)]" ng-repeat='role in all_roles' ng-click='toggleRole(member, role)'>
+                          <li data-role-id="role.id" ng-class="{true: 'selected', false: '' }[hasRole(member, role.id)]" ng-repeat='role in role_structure.roles' ng-click='toggleRole(member, role)'>
                             <i class="icon-ok"></i>
                             {$ role.name $}
                           </li>
@@ -84,12 +84,27 @@
                 </div>
               </div>
             </div>
+            <div class="">
+              <label for="id_default_{$ stepSlug $}_role">Default role</label>
+              <input id="id_default_{$ stepSlug $}_role" name="default_{$ stepSlug $}_role" type="text" ng-model="role_structure.default_role.id">
+
+              <label ng-repeat-start="role in role_structure.roles" for="id_{$ stepSlug $}_role_{$ role.id $}" ng-bind="role.name"></label>
+              <select ng-repeat-end
+                      multiple="multiple"
+                      id="id_{$ stepSlug $}_role_{$ role.id $}"
+                      name="{$ stepSlug $}_role_{$ role.id $}"
+                      ng-model="role.selected_groups"
+                      ng-options="group.id as group.name for group in role_structure.all_groups">
+              </select>
+            </div>
         </div>
     </script>
 </div>
 
 <div class="hide">
-  {% include "horizon/common/_form_fields.html" %}
+  {% comment %}
+    {% include "horizon/common/_form_fields.html" %}
+  {% endcomment %}
 </div>
 
 <script>
