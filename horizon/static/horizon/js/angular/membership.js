@@ -85,41 +85,45 @@ angular.module('horizonApp').controller('MembershipController',
     ['$scope', 'horizon', 'MembershipFactory',
     function($scope, horizon, MembershipFactory) {
         $scope.role_structure = {
-            default_role: { id: 'a1908c795d9b46d781af8682f0b9d266' },
-            all_groups: [
-                { id: 'c017207d0cf64f74b5754b29d14fb7c6', name: 'my group1' },
-                { id: 'c1763ddf931d47bd9e0d07ce798006e1', name: 'my group2' }
+            default_role_id: 'a1908c795d9b46d781af8682f0b9d266',
+            groups: [
+                {
+                  id: 'c017207d0cf64f74b5754b29d14fb7c6',
+                  name: 'my group1',
+                  is_member: true,
+                  roles: [ 'a1908c795d9b46d781af8682f0b9d266', '26bbda95f78f4320ac2f6ed488dff740' ]
+                }
+                {
+                  id: 'c1763ddf931d47bd9e0d07ce798006e1',
+                  name: 'my group2',
+                  is_member: false,
+                  roles: [ ]
+                }
             ],
             roles: [
                 {
                     id: '9fe2ff9ee4384b1894a90878d3e92bab',
-                    name: '_member_',
-                    selected_groups: ['c017207d0cf64f74b5754b29d14fb7c6', ]
+                    name: '_member_'
                 },
                 {
                     id: '139092b4b20048e6ad45b59d96309212',
-                    name: 'admin',
-                    selected_groups: ['c017207d0cf64f74b5754b29d14fb7c6']
+                    name: 'admin'
                 },
                 {
                     id: 'a1908c795d9b46d781af8682f0b9d266',
-                    name: 'Member',
-                    selected_groups: []
+                    name: 'Member'
                 },
                 {
                     id: 'f0b734b0ea4a4fe1926cff4756b1a5f7',
-                    name: 'anotherrole',
-                    selected_groups: []
+                    name: 'anotherrole'
                 },
                 {
                     id: '26bbda95f78f4320ac2f6ed488dff740',
-                    name: 'ResellerAdmin',
-                    selected_groups: ['c017207d0cf64f74b5754b29d14fb7c6']
+                    name: 'ResellerAdmin'
                 },
                 {
                     id: '529ed653a0684981bc0dafffb21de25c',
-                    name: 'service',
-                    selected_groups: []
+                    name: 'service'
                 },
             ],
         };
