@@ -67,8 +67,44 @@ class SelectTemplateView(forms.ModalFormView):
         return kwargs
 
 
+class ChangeTemplateView(forms.ModalFormView):
+    form_class = project_forms.ChangeTemplateForm
+    template_name = 'project/stacks/change_template.html'
+    success_url = reverse_lazy('horizon:project:stacks:edit_template')
+
+    def get_context_data(self, **kwargs):
+        context = super(ChangeTemplateView, self).get_context_data(**kwargs)
+        context['stack'] = self.get_object()
+        return context
+
+    @memoized.memoized_method
+    def get_object(self):
+        if not hasattr(self, "_stack"):
+            stack_id = self.kwargs['stack_id']
+            try:
+                stack = {}
+                stack = api.heat.stack_get(self.request, stack_id)
+                self._stack = stack
+            except Exception:
+                msg = _("Unable to retrieve stack.")
+                redirect = reverse('horizon:project:stacks:index')
+                exceptions.handle(self.request, msg, redirect=redirect)
+        return self._stack
+
+    def get_initial(self):
+        stack = self.get_object()
+        return {'stack_id': stack.id,
+                'stack_name': stack.stack_name
+                }
+
+    def get_form_kwargs(self):
+        kwargs = super(ChangeTemplateView, self).get_form_kwargs()
+        kwargs['next_view'] = EditStackView
+        return kwargs
+
+
 class CreateStackView(forms.ModalFormView):
-    form_class = project_forms.StackCreateForm
+    form_class = project_forms.CreateStackForm
     template_name = 'project/stacks/create.html'
     success_url = reverse_lazy('horizon:project:stacks:index')
 
@@ -90,6 +126,63 @@ class CreateStackView(forms.ModalFormView):
             data = json.loads(self.request.POST['parameters'])
             kwargs['parameters'] = data
         return kwargs
+
+
+class EditStackView(forms.ModalFormView):
+    form_class = project_forms.EditStackForm
+    template_name = 'project/stacks/update.html'
+    success_url = reverse_lazy('horizon:project:stacks:index')
+
+    def get_initial(self):
+        initial = {}
+        initial['template'] = self.get_object()['template']
+        if 'template_data' in self.kwargs:
+            initial['template_data'] = self.kwargs['template_data']
+        if 'template_url' in self.kwargs:
+            initial['template_url'] = self.kwargs['template_url']
+        if 'parameters' in self.kwargs:
+            initial['parameters'] = json.dumps(self.kwargs['parameters'])
+        else: # load stack parameters from API
+            initial['parameters'] = json.dumps(initial['template'])
+
+        initial['stack'] = self.get_object()['stack']
+        if initial['stack']:
+            initial['stack_id'] = initial['stack'].id
+            initial['stack_name'] = initial['stack'].stack_name
+
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super(EditStackView, self).get_form_kwargs()
+        if 'parameters' in self.kwargs:
+            kwargs['parameters'] = self.kwargs['parameters']
+        else:
+            if self.request.POST:
+                data = json.loads(self.request.POST['parameters'])
+            else:
+                data = kwargs['initial']['template']
+            kwargs['parameters'] = data
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(EditStackView, self).get_context_data(**kwargs)
+        context['stack'] = self.get_object()['stack']
+        return context
+
+    @memoized.memoized_method
+    def get_object(self):
+        if not hasattr(self, "_stack"):
+            stack_id = self.kwargs['stack_id']
+            try:
+                stack = {}
+                stack['stack'] = api.heat.stack_get(self.request, stack_id)
+                stack['template'] = api.heat.template_get(self.request, stack_id)
+                self._stack = stack
+            except Exception:
+                msg = _("Unable to retrieve stack.")
+                redirect = reverse('horizon:project:stacks:index')
+                exceptions.handle(self.request, msg, redirect=redirect)
+        return self._stack
 
 
 class DetailView(tabs.TabView):

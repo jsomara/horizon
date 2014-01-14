@@ -151,7 +151,64 @@ class StackTests(test.TestCase):
                      "__param_DBPassword": "admin",
                      "__param_DBRootPassword": "admin",
                      "__param_DBName": "wordpress",
-                     'method': forms.StackCreateForm.__name__}
+                     'method': forms.CreateStackForm.__name__}
+        res = self.client.post(url, form_data)
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @test.create_stubs({api.heat: ('stack_update','stack_get','template_get', 'template_validate')})
+    def test_edit_stack_template(self):
+        template = self.stack_templates.first()
+        stack = self.stacks.first()
+
+        api.heat.stack_get(IsA(http.HttpRequest),
+                              stack.id).AndReturn(stack)
+        api.heat.template_validate(IsA(http.HttpRequest),
+                                   template=template.data) \
+           .AndReturn(json.loads(template.validate))
+        api.heat.stack_get(IsA(http.HttpRequest),
+                              stack.id).AndReturn(stack)
+        api.heat.template_get(IsA(http.HttpRequest),
+                              stack.id).AndReturn(template)
+        api.heat.stack_get(IsA(http.HttpRequest),
+                              stack.id).AndReturn(stack)
+        api.heat.template_get(IsA(http.HttpRequest),
+                              stack.id).AndReturn(template)
+
+        api.heat.stack_update(IsA(http.HttpRequest),
+                              stack_id=stack.id,
+                              stack_name=stack.stack_name,
+                              timeout_mins=61,
+                              disable_rollback=True,
+                              parameters=IsA(dict),
+                              password='password',
+                              template=template.data)
+        self.mox.ReplayAll()
+
+        url = reverse('horizon:project:stacks:change_template', args=[stack.id])
+        res = self.client.get(url)
+        self.assertTemplateUsed(res, 'project/stacks/change_template.html')
+
+        form_data = {'template_source': 'raw',
+                     'template_data': template.data,
+                     'method': forms.ChangeTemplateForm.__name__}
+        res = self.client.post(url, form_data)
+
+        url = reverse('horizon:project:stacks:edit_template', args=(stack.id,))
+        form_data = {'template_source': 'raw',
+                     'template_data': template.data,
+                     'password': 'password',
+                     'parameters': template.validate,
+                     'stack_name': stack.stack_name,
+                     "timeout_mins": 61,
+                     "disable_rollback": True,
+                     "__param_DBUsername": "admin",
+                     "__param_LinuxDistribution": "F17",
+                     "__param_InstanceType": "m1.small",
+                     "__param_KeyName": "test",
+                     "__param_DBPassword": "admin",
+                     "__param_DBRootPassword": "admin",
+                     "__param_DBName": "wordpress",
+                     'method': forms.EditStackForm.__name__}
         res = self.client.post(url, form_data)
         self.assertRedirectsNoFollow(res, INDEX_URL)
 
@@ -177,7 +234,7 @@ class StackTests(test.TestCase):
                      "__param_DBPassword": "admin",
                      "__param_DBRootPassword": "admin",
                      "__param_DBName": "wordpress",
-                     'method': forms.StackCreateForm.__name__}
+                     'method': forms.CreateStackForm.__name__}
 
         res = self.client.post(url, form_data)
         error = ('Name must start with a letter and may only contain letters, '
