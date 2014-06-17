@@ -19,6 +19,7 @@ from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
 
+from django import http
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse  # noqa
@@ -38,6 +39,22 @@ from openstack_dashboard.dashboards.project.stacks \
 
 
 LOG = logging.getLogger(__name__)
+
+class LaunchStackView(generic.View):
+
+    def get(self, request):
+        return http.HttpResponse(json.dumps({
+            'peener': [
+               'peener1',
+               'peener2'
+            ]
+        }), "application/json")
+
+    def post(self, request):
+        data = json.loads(self.request.body)
+
+        LOG.error("Got :")
+        LOG.error(data)
 
 
 class IndexView(tables.DataTableView):

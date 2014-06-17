@@ -34,6 +34,15 @@ class LaunchStack(tables.LinkAction):
     policy_rules = (("orchestration", "cloudformation:CreateStack"),)
 
 
+class LaunchStackAngular(tables.LinkAction):
+    name = "launch2"
+    verbose_name = _("Launch Stack w/ Angular")
+    url = "#"
+    classes = ("btn-launch")
+    policy_rules = (("orchestration", "cloudformation:CreateStack"),)
+    attrs = {'data-ng-click': 'open()'}
+
+
 class ChangeStackTemplate(tables.LinkAction):
     name = "edit"
     verbose_name = _("Change Stack Template")
@@ -110,7 +119,7 @@ class StacksTable(tables.DataTable):
         pagination_param = 'stack_marker'
         status_columns = ["status", ]
         row_class = StacksUpdateRow
-        table_actions = (LaunchStack, DeleteStack,)
+        table_actions = (LaunchStack, LaunchStackAngular, DeleteStack,)
         row_actions = (DeleteStack,
                        ChangeStackTemplate)
 

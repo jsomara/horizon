@@ -12,6 +12,7 @@
 
 from django.conf.urls import patterns  # noqa
 from django.conf.urls import url  # noqa
+from django.views.generic import TemplateView
 
 from openstack_dashboard.dashboards.project.stacks import views
 
@@ -32,4 +33,8 @@ urlpatterns = patterns(
         views.ResourceView.as_view(), name='resource'),
     url(r'^get_d3_data/(?P<stack_id>[^/]+)/$',
         views.JSONView.as_view(), name='d3_data'),
+    url(r'^launch_two$', views.LaunchStackView.as_view(), name='launch_two'),
+    url(r'^launchTemplate$',
+        TemplateView.as_view(template_name='project/stacks/workflow/launch.html'),
+        name='launchTemplate'),
 )
