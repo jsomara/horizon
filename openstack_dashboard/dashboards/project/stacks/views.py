@@ -12,19 +12,21 @@
 
 import json
 import logging
-from operator import attrgetter
 
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
+from django import http
 from django.http import HttpResponse  # noqa
 from django.utils.translation import ugettext_lazy as _
-import django.views.generic
+from django.views import generic
 
 from horizon import exceptions
 from horizon import forms
+from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
+
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.stacks \
     import api as project_api
@@ -35,6 +37,7 @@ from openstack_dashboard.dashboards.project.stacks \
 from openstack_dashboard.dashboards.project.stacks \
     import tabs as project_tabs
 
+from operator import attrgetter
 
 LOG = logging.getLogger(__name__)
 
@@ -261,7 +264,123 @@ class ResourceView(tabs.TabView):
             request, resource=resource, metadata=metadata, **kwargs)
 
 
-class JSONView(django.views.generic.View):
+class JSONView(generic.View):
     def get(self, request, stack_id=''):
         return HttpResponse(project_api.d3_data(request, stack_id=stack_id),
                             content_type="application/json")
+
+
+class LaunchStackView(generic.View):
+
+    def get(self, request):
+        return http.HttpResponse(json.dumps('200'),
+            "application/json")
+
+    def build_base_parameters(self, data):
+        fields = {
+            'stack_name': data.pop('Stack Name'),
+            'timeout_mins': data.pop('Creation Timeout (minutes)'),
+            'disable_rollback': not(data.pop('Rollback On Failure')),
+            'password': data.pop('Admin Password')
+        }
+        return fields
+
+    def convert_params_to_dict(self, data):
+        fields = {}
+        for param in data:
+            fields[param.get('label')] = param.get('value')
+        return fields
+
+    def fields_from_request(self, request):
+        body = json.loads(self.request.body)
+        params = self.convert_params_to_dict(body['parameters'])
+        fields = self.build_base_parameters(params)
+
+        fields['parameters'] = params
+        fields['environment'] = body['environment']
+        fields['template'] = body['template']
+        fields['files'] = body['files']
+
+        LOG.error('Compiled fields')
+        LOG.error(fields)
+        return fields
+
+    def post(self, request):
+        try:
+            fields = self.fields_from_request(self.request)
+            api.heat.stack_create(self.request, **fields)
+            messages.success(request, _("Stack creation started."))
+            return HttpResponse(json.dumps(True),
+                                content_type='application/json')
+        except Exception:
+            LOG.exception('exception')
+            exceptions.handle(request)
+
+
+class ReferencesView(generic.View):
+    def post(self, request):
+        references = json.loads(self.request.body)
+
+        template = references.get('template', None)
+        environment = references.get('environment', None)
+
+        if template is None:
+            raise Exception("Template is required")
+
+        files, env = api.heat.find_references(request, template, environment)
+        LOG.error("References from heat api:")
+        LOG.error(files)
+        return HttpResponse(json.dumps(files), content_type='application/json')
+
+
+class ParametersView(generic.View):
+    def make_params_for_validate(self, body):
+        template = body['template']
+        environment = body['environment']
+        files = body['files']
+        if files is None:
+            files = {}
+        return template, environment, files
+
+    def add_base_params(self, validated):
+        if validated is None:
+            validated = {'Parameters': {}}
+
+        validated['Parameters']['stack_name'] = {
+            'Label': 'Stack Name',
+            'Description': 'Name of the stack to create.',
+            'Type': 'String'
+        }
+        validated['Parameters']['timeout_mins'] = {
+            'Label': 'Creation Timeout (minutes)',
+            'Description': 'Stack creation timeout in minutes.',
+            'Type': 'Integer'
+        }
+        validated['Parameters']['enable_rollback'] = {
+            'Label': 'Rollback On Failure',
+            'Description': 'Enable rollback on create/update failure.',
+            'Type': 'Integer'
+        }
+        validated['Parameters']['password'] = {
+            'Label': 'Admin Password',
+            'Description':
+                "Password for the user to perform operations "
+                "throughout the lifecycle of the stack",
+            'Type': 'Password'
+        }
+
+        return validated
+
+    def post(self, request):
+        body = json.loads(self.request.body)
+        template, env, files = self.make_params_for_validate(body)
+        validated = api.heat.template_validate(
+            self.request,
+            template=template,
+            environment=env,
+            files=files)
+        params = self.add_base_params(validated)
+        LOG.error("Parameters from heat api:")
+        LOG.error(params)
+        return HttpResponse(json.dumps(params),
+                            content_type='application/json')

@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon.base import Horizon  # noqa
 from horizon import conf
-
+from horizon.utils.filters import to_json_safe  # noqa
 
 register = template.Library()
 
@@ -169,3 +169,47 @@ def jstemplate(parser, token):
 @register.assignment_tag
 def load_config():
     return conf.HORIZON_CONFIG
+
+
+@register.tag
+def json_angular(parser, token):
+    """provide a json_angular template tag which inject JSON data in a safe way
+    and use an angular directive to retrieve it in the client.
+
+    Usage is {% json_angular <object_to_dump> [<id_of_the_object>]%} where the
+    object will be dumped by :class: `~horizon.utils.functions.JSONSafeEncoder`
+    and the id could be a string or a value which will be interpolated by the
+    django template renderer. If the id is not specified the object key will be
+    used as the id
+    """
+    token = token.split_contents()
+    if len(token) == 2:
+        return JSONTemplateNode(token[1], token[1])
+    elif len(token) == 3:
+        return JSONTemplateNode(token[1], token[2])
+    else:
+        raise template.TemplateSyntaxError(
+            "%r tag requires three arguments" % token.contents.split()[0])
+
+
+class JSONTemplateNode(template.Node):
+
+    def __init__(self, context_key, id_json):
+        self.context_key = context_key
+        self.id_json = id_json
+
+    def id_json_render(self):
+        if self.id_json == self.context_key:
+            return '"%s"' % self.id_json
+        elif self.id_json[0] == self.id_json[-1] == '"':
+            return self.id_json
+        else:
+            return '"{{ %s }}"' % self.id_json
+
+    def render(self, context):
+        t = template.Template(
+            '<script type="application/json" id=%s >\n'
+            '  {{ %s|to_json_safe }}\n'
+            '</script>\n' % (self.id_json_render(), self.context_key)
+        )
+        return t.render(context)

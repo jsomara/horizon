@@ -10,15 +10,78 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import math
 import re
 
+import six
+
 from django.conf import settings
 from django.contrib.auth import logout  # noqa
+from django.contrib.messages.storage import cookie
+from django.core import urlresolvers
 from django import http
 from django.utils.encoding import force_text
+from django.utils import functional  # noqa
 from django.utils.functional import lazy  # noqa
+from django.utils import html
 from django.utils import translation
+
+from horizon import base
+
+
+class JSONSafeEncoder(json.JSONEncoder):
+    """Safe encode an object into JSON, using django escape and mark the result
+    as safe in order to avoid template escaping.
+    """
+    def __init__(self, *args, **kwargs):
+        super(JSONSafeEncoder, self).__init__(*args, **kwargs)
+        self.flag = True
+
+    def default(self, o):
+        """Override this method to encode specific object
+        """
+        if isinstance(o, cookie.CookieStorage):
+            return [
+                {
+                    "type": html.escape(message.tags),
+                    "msg": html.escape(message)
+                } for message in o]
+        if isinstance(o, base.Panel):
+            try:
+                url = o.get_absolute_url()
+            except urlresolvers.NoReverseMatch:
+                url = "#"
+            return {
+                "name": o.name,
+                "url": url
+            }
+        if isinstance(o, functional.Promise):
+            return unicode(o)
+
+        return json.JSONEncoder.default(self, o)
+
+    def _encode(self, o):
+        if isinstance(o, basestring):
+            return html.escape(o)
+        else:
+            return self.encode(o)
+
+    def encode(self, o):
+        """Overrides encode in order to escape every string in types handled by
+        default.
+        """
+        flag = self.flag
+        self.flag = False
+        if isinstance(o, basestring):
+            o = html.escape(o)
+        if isinstance(o, (list, tuple)):
+            o = [self._encode(obj) for obj in o]
+        if isinstance(o, dict):
+            o = dict([(key, self._encode(value))
+                      for key, value in six.iteritems(o)])
+
+        return html.mark_safe(json.JSONEncoder.encode(self, o)) if flag else o
 
 
 def _lazy_join(separator, strings):

@@ -10,12 +10,20 @@
 {% for file in HORIZON_CONFIG.js_files %}
     <script src='{{ STATIC_URL }}{{ file }}' type='text/javascript' charset='utf-8'></script>
 {% endfor %}
+<script src='{{ STATIC_URL }}horizon/lib/angular/angular-bootstrap.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/lib/angular/angular-animate.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/lib/angular/angular-sanitize.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/lib/angular/angular-cookies.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/lib/angular/angular-resource.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/lib/angular/angular-file-upload.js' type='text/javascript' charset='utf-8'></script>
 
+<script src='{{ STATIC_URL }}horizon/js/angular/horizon.conf.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/js/angular/controllers/stacks.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/controllers/dummy.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/directives/forms.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/angular/horizon.conf.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/js/angular/directives/stacks.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/services/horizon.utils.js' type='text/javascript' charset='utf-8'></script>
+<script src='{{ STATIC_URL }}horizon/js/angular/services/horizon.messages.js' type='text/javascript' charset='utf-8'></script>
 
 <script src='{{ STATIC_URL }}horizon/lib/jquery/jquery.quicksearch.js' type='text/javascript' charset="utf-8"></script>
 <script src="{{ STATIC_URL }}horizon/lib/jquery/jquery.tablesorter.js" type="text/javascript" charset="utf-8"></script>
@@ -57,7 +65,6 @@
 <script src='{{ STATIC_URL }}horizon/js/horizon.images.js' type='text/javascript' charset='utf-8'></script>
 {% block custom_js_files %}{% endblock %}
 {% endcompress %}
-
 {% comment %} Client-side Templates (These should *not* be inside the "compress" tag.) {% endcomment %}
 {% include "horizon/client_side/templates.html" %}
 

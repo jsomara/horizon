@@ -40,6 +40,10 @@
           speed:  0.8,
           trail:  50
         }
+      },
+      auto_fade_alerts: {
+          fade_duration: 1
       }
+
     });
 }());

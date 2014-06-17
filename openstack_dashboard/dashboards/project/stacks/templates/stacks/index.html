@@ -7,7 +7,9 @@
 {% endblock page_header %}
 
 {% block main %}
-    {{ table.render }}
+    <div ng-controller="StacksCtrl">
+        {{ table.render }}
+    </div>
 {% endblock %}
 
 

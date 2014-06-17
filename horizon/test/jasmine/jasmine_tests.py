@@ -15,7 +15,20 @@ from horizon.test import helpers as test
 
 class ServicesTests(test.JasmineTests):
     sources = [
+        'horizon/js/horizon.js',
+        'horizon/js/angular/horizon.js',
         'horizon/js/angular/horizon.conf.js',
-        'horizon/js/angular/services/horizon.utils.js'
+        'horizon/js/angular/services/horizon.utils.js',
+        'horizon/js/angular/services/horizon.messages.js',
+        'horizon/js/angular/controllers/stacks.js',
+        'horizon/lib/angular/angular-bootstrap.js',
+        'horizon/lib/angular/angular-cookies.js',
+        'horizon/lib/angular/angular-sanitize.js',
+        'horizon/lib/angular/angular-resource.js',
+        'horizon/lib/angular/angular-animate.js',
+        'horizon/lib/angular/angular-file-upload.js',
     ]
-    specs = ['horizon/tests/jasmine/utilsSpec.js']
+    specs = [
+        'horizon/tests/jasmine/utilsSpec.js',
+        'horizon/tests/jasmine/stacksSpec.js'
+    ]

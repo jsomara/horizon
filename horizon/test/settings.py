@@ -24,8 +24,11 @@ import django
 from django.utils import html_parser
 import xstatic.main
 import xstatic.pkg.angular
+import xstatic.pkg.angular_animate
+import xstatic.pkg.angular_bootstrap
 import xstatic.pkg.angular_cookies
 import xstatic.pkg.angular_mock
+import xstatic.pkg.angular_sanitize
 import xstatic.pkg.d3
 import xstatic.pkg.hogan
 import xstatic.pkg.jasmine
@@ -154,10 +157,16 @@ STATICFILES_FINDERS = (
 STATICFILES_DIRS = (
     ('horizon/lib/angular',
         xstatic.main.XStatic(xstatic.pkg.angular).base_dir),
+    ('horizon/lib/angular', xstatic.main.XStatic(xstatic.pkg.angular_animate)
+        .base_dir),
+    ('horizon/lib/angular', xstatic.main.XStatic(xstatic.pkg.angular_bootstrap)
+        .base_dir),
     ('horizon/lib/angular',
         xstatic.main.XStatic(xstatic.pkg.angular_cookies).base_dir),
     ('horizon/lib/angular',
         xstatic.main.XStatic(xstatic.pkg.angular_mock).base_dir),
+    ('horizon/lib/angular', xstatic.main.XStatic(xstatic.pkg.angular_sanitize)
+        .base_dir),
     ('horizon/lib',
         xstatic.main.XStatic(xstatic.pkg.d3).base_dir),
     ('horizon/lib',
@@ -180,6 +189,7 @@ STATICFILES_DIRS = (
         xstatic.main.XStatic(xstatic.pkg.rickshaw).base_dir),
     ('horizon/lib',
         xstatic.main.XStatic(xstatic.pkg.spin).base_dir),
+    ('horizon/lib/angular', xstatic.main.XStatic(xstatic.pkg.jquery).base_dir),
 )
 
 LOGGING = {

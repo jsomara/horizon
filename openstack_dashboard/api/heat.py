@@ -13,12 +13,74 @@
 import logging
 
 from django.conf import settings
+from django import forms
+from django.utils.translation import ugettext_lazy as _
+
 from heatclient import client as heat_client
+from heatclient.common import template_utils
 
 from horizon.utils import functions as utils
+
 from openstack_dashboard.api import base
 
 LOG = logging.getLogger(__name__)
+
+
+def build_parameter_fields(self, template_validate):
+    """Creates parameter fields for a given template
+
+    :type prefix: str
+    :param prefix: prefix (environment, template) of field
+    :type input_type: str
+    :param input_type: field type (file, raw, url)
+    :type name: str
+    :param name: translated text label to display to user
+    :rtype: dict
+    :return: an attribute set to pass to form build
+    """
+    self.fields['password'] = forms.CharField(
+        label=_('Password for user "%s"') % self.request.user.username,
+        help_text=_('This is required for operations to be performed '
+                    'throughout the lifecycle of the stack'),
+        required=True,
+        widget=forms.PasswordInput())
+
+    self.help_text = template_validate['Description']
+
+    params = template_validate.get('Parameters', {})
+
+    for param_key, param in params.items():
+        field_key = self.param_prefix + param_key
+        field_args = {
+            'initial': param.get('Default', None),
+            'label': param.get('Label', param_key),
+            'help_text': param.get('Description', ''),
+            'required': param.get('Default', None) is None
+        }
+
+        param_type = param.get('Type', None)
+
+        if 'AllowedValues' in param:
+            choices = map(lambda x: (x, x), param['AllowedValues'])
+            field_args['choices'] = choices
+            field = forms.ChoiceField(**field_args)
+
+        elif param_type in ('CommaDelimitedList', 'String'):
+            if 'MinLength' in param:
+                field_args['min_length'] = int(param['MinLength'])
+                field_args['required'] = param.get('MinLength', 0) > 0
+            if 'MaxLength' in param:
+                field_args['max_length'] = int(param['MaxLength'])
+            field = forms.CharField(**field_args)
+
+        elif param_type == 'Number':
+            if 'MinValue' in param:
+                field_args['min_value'] = int(param['MinValue'])
+            if 'MaxValue' in param:
+                field_args['max_value'] = int(param['MaxValue'])
+            field = forms.IntegerField(**field_args)
+
+        self.fields[field_key] = field
 
 
 def format_parameters(params):
@@ -126,3 +188,8 @@ def resource_metadata_get(request, stack_id, resource_name):
 
 def template_validate(request, **kwargs):
     return heatclient(request).stacks.validate(**kwargs)
+
+
+def find_references(request, template, environment=None):
+    return template_utils.process_raw_environment_and_files(
+        template=template, raw_env=environment)
