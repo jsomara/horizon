@@ -1,10 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
-
-</body>
-</html>
+{% load i18n %}
+<div data-tab data-active="tabs[0].active" data-select="select(0)" >
+  <div data-tab-heading ng-class="{done: !tabs[0].active && tabs[0].valid}" class="heading">
+    {% trans "Step 1 " %} - {% trans "Select Template & Environment" %}
+  </div>
+  <div class="form-horizontal row-fluid" ng-form="SelectTemplateForm" ng-controller="SelectTemplateCtrl">
+      <fieldset>
+        <div class="control-group form-field clearfix required">
+            <div ng-repeat="file in baseFiles">
+                <div data-heat-data-upload data-file="file"></div>
+            </div>
+        </div>
+      </fieldset>
+      <div class="span4">
+          <h3>{% trans "Step 1" %} - {% trans "Select Template & Environment" %}</h3>
+          {% blocktrans %} Use one of the available template source options to specify the template to be used in creating this stack.{% endblocktrans %}
+        </div>
+  </div>
+</div>

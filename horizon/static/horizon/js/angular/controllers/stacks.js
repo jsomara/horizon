@@ -39,14 +39,13 @@ angular.module('hz').controller({
           $scope.tabs = [
             {active: false, valid: false},
             {active: false, valid: false, disabled: true},
-            {active: false, valid: false},
             {active: false, valid: false}];
           $scope.index = 0;
 
           $scope.next = function () {
             $scope.select($scope.index + 1);
           };
-          $scope.launchInstance = {};
+          $scope.launchStack = {};
 
           $scope.select = function (index) {
             if ($scope.index === index) {
@@ -65,14 +64,12 @@ angular.module('hz').controller({
             });
           };
 
-          $scope.launch = function (launchInstanceForm) {
-            if (launchInstanceForm.$invalid) {
-              launchInstanceForm.AccessAndSecurityForm.networks.$pristine = false;
-              launchInstanceForm.AccessAndSecurityForm.sec_groups.$pristine = false;
-              launchInstanceForm.AccessAndSecurityForm.$pristine = false;
+          $scope.launch = function (launchStackForm) {
+            if (launchStackForm.$invalid) {
+              launchStackForm.AccessAndSecurityForm.$pristine = false;
             } else {
               $modalInstance.close(
-                $http.post('/workflow/launch_two', angular.toJson($scope.launchInstance))
+                $http.post('/workflow/launch_two', angular.toJson($scope.launchStack))
               );
             }
           };
@@ -84,7 +81,10 @@ angular.module('hz').controller({
 
     SelectTemplateCtrl: ['$scope',
         function ($scope) {
-          $scope.response = response.data;
+            $scope.baseFiles = [
+                { label: 'Template', value: 'template', source: 'file' },
+                { label: 'Environment', value: 'environment', source: 'file' }
+            ];
 
         }],
 
