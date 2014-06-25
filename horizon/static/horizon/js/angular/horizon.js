@@ -4,7 +4,8 @@ var horizon_dependencies = ['hz.conf',
                             'ui.bootstrap',
                             'ngAnimate',
                             'ngSanitize',
-                            'ngCookies'];
+                            'ngCookies',
+                            'angularFileUpload'];
 dependencies = horizon_dependencies.concat(angularModuleExtension);
 var horizonApp = angular.module('hz', dependencies)
   .config(['$interpolateProvider', '$httpProvider',
