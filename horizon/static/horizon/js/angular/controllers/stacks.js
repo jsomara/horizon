@@ -86,6 +86,8 @@ angular.module('hz').controller({
                 { label: 'Environment', value: 'environment', source: 'file' }
             ];
 
+            $scope.select = function(source_type, source) {}
+
         }],
 
     ResolveReferencesCtrl: ['$scope',
@@ -104,6 +106,7 @@ angular.module('hz').controller({
         function ($scope, launchStackWorkflow) {
           $scope.open = launchStackWorkflow.start;
         }]
+
 
 
 
