@@ -6,7 +6,7 @@ angular.module('hz').directive({
 
         return {
             restrict: 'A',
-            require: '^file',
+           // require: '^file',
             transclude: true,
             scope: {
                 file: '='

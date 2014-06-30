@@ -1,15 +1,11 @@
 {% load i18n %}
-<div data-tab data-active="tabs[0].active" data-select="select(0)" >
-  <div data-tab-heading ng-class="{done: !tabs[0].active && tabs[0].valid}" class="heading">
+<div data-tab data-active="tabs[2].active" data-select="select(2)" >
+  <div data-tab-heading ng-class="{done: !tabs[2].active && tabs[2].valid}" class="heading">
     {% trans "Step 3 " %} - {% trans "Enter Stack Parameters" %}
   </div>
   <div class="form-horizontal row-fluid" ng-form="SelectTemplateForm" ng-controller="SelectTemplateCtrl">
       <fieldset>
-        <div class="control-group form-field clearfix required">
-            <div ng-repeat="file in baseFiles">
-                <div data-heat-data-upload data-file="file"></div>
-            </div>
-        </div>
+        test
       </fieldset>
       <div class="span4">
           <h3>{% trans "Step 3" %} - {% trans "Resolve Environment References" %}</h3>

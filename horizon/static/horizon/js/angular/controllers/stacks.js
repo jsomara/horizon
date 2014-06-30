@@ -4,7 +4,7 @@ angular.module('hz').service
         return {
           start : function () {
             var modalInstance = $modal.open({
-              windowClass: 'fullscreen launch-stack',
+              windowClass: 'fullscreen launch-instancee',
               keyboard: false,
               backdrop: 'static',
               templateUrl: '/project/stacks/launchTemplate',
@@ -35,7 +35,7 @@ angular.module('hz').controller({
     ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response',
         function ($scope, $modalInstance, $timeout, $http, response) {
           $scope.response = response.data;
-          $scope.datas = []
+          $scope.data = [];
           $scope.tabs = [
             {active: false, valid: false},
             {active: false, valid: false, disabled: true},
@@ -52,21 +52,20 @@ angular.module('hz').controller({
               return;
             }
 
-            $timeout(function () {
-              var i = 0;
-              while (i < $scope.tabs.length &&
-                ($scope.tabs[i].valid || $scope.tabs[i].disabled) &&
-                ($scope.tabs[i].disabled || i < index)) {
-                i += 1;
-              }
-              $scope.tabs[i].active = true;
-              $scope.index = i;
-            });
+              $timeout(function () {
+
+                  if (!($scope.tabs[index].disabled)) {
+                      $scope.index = index
+                      angular.forEach($scope.tabs, function (tab, i) {
+                          $scope.tabs[i].active = (i === index);
+                      });
+                  }
+              });
           };
 
           $scope.launch = function (launchStackForm) {
             if (launchStackForm.$invalid) {
-              launchStackForm.AccessAndSecurityForm.$pristine = false;
+                //
             } else {
               $modalInstance.close(
                 $http.post('/workflow/launch_two', angular.toJson($scope.launchStack))
@@ -86,7 +85,13 @@ angular.module('hz').controller({
                 { label: 'Environment', value: 'environment', source: 'file' }
             ];
 
-            $scope.select = function(source_type, source) {}
+            $scope.$watchCollection('baseFiles', function () {
+                var valid = true;
+                angular.forEach($scope.baseFiles, function(f) {
+                    valid = valid && (f.url !== undefined || f.file !== undefined || f.raw !== undefined);
+                });
+                $scope.$parent.tabs[0].valid = valid;
+            })
 
         }],
 
