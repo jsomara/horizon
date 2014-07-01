@@ -1,3 +1,35 @@
+angular.module('hz').factory
+    ('StackReferences', ['$resource',
+        function ($resource) {
+             var StackReferencesFactory = $resource('/project/stacks/references', {
+                 references: { method: 'POST' }
+             });
+
+             return StackReferencesFactory;
+
+        }]);
+
+angular.module('hz').factory
+    ('StackParameters', ['$resource',
+        function ($resource) {
+            var StackParametersFactory = $resource('/project/stacks/parameters', {
+                parameters: { method: 'POST' }
+            });
+
+            return StackParametersFactory;
+        }]);
+
+angular.module('hz').factory
+    ('StackLaunch', ['$resource',
+        function ($resource) {
+
+             var StackLaunchFactory = $resource('/project/stacks/launch', {
+                launch: { method: 'POST' }
+            });
+
+            return StackLaunchFactory;
+        }]);
+
 angular.module('hz').service
     ('launchStackWorkflow', ['hzConfig', 'hzMessages', '$modal', '$http',
       function (hzConfig, hzMessages, $modal, $http) {
@@ -29,11 +61,11 @@ angular.module('hz').service
             });
           }
         };
-      }])
+      }]);
 
 angular.module('hz').controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response',
-        function ($scope, $modalInstance, $timeout, $http, response) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', 'response', 'StackParameters', 'StackReferences',
+        function ($scope, $modalInstance, $timeout, response, StackParameters, StackReferences) {
           $scope.response = response.data;
           $scope.data = [];
           $scope.tabs = [
@@ -48,20 +80,75 @@ angular.module('hz').controller({
           $scope.launchStack = {};
 
           $scope.select = function (index) {
-            if ($scope.index === index) {
-              return;
-            }
-
-              $timeout(function () {
-
-                  if (!($scope.tabs[index].disabled)) {
-                      $scope.index = index
-                      angular.forEach($scope.tabs, function (tab, i) {
-                          $scope.tabs[i].active = (i === index);
-                      });
-                  }
-              });
+              if ($scope.index !== index) {
+                  $timeout(function () {
+                      if (!($scope.tabs[index].disabled)) {
+                          $scope.index = index;
+                          angular.forEach($scope.tabs, function (tab, i) {
+                              $scope.tabs[i].active = (i === index);
+                          });
+                      }
+                  });
+              }
           };
+
+          // create parameters list for directive
+          var createParameters = function(parameters) {
+
+          }
+
+          // turn a required reference file into a file object for directive
+          var makeFile = function(file) {
+              return {
+                  label: file.value,
+                  value: file.name,
+                  source: 'file',
+                  required: true };
+          }
+
+          // create files for form from horizon api
+          var createReferences = function(references) {
+              launchStack.references = {};
+              launchStack.references.files = [];
+              angular.forEach(references, function(r) {
+                 launchStack.referenceForm.files.push(makeFile(r))
+              });
+          }
+
+          // query required parameters list from horizon
+          var loadParameters = function() {
+              console.log("Calling load parameters into horizon");
+              var parameters = StackParameters.parameters();
+              parameters.$promise.then(
+                  function(parameters){
+                    createParameters(parameters);
+                  }
+              )
+          };
+
+          // query required references list from horizon
+          var resolveReferences = function() {
+              console.log("Calling resolve references into horizon");
+              var references = StackReferences.references();
+              references.$promise.then(
+                  function(references){
+                      createReferences(references);
+                  }
+              )
+          };
+
+          $scope.selectParameters = function() {
+              $scope.select(2);
+              // dont re-resolve parameters unless template changes
+              loadParameters();
+          };
+
+          $scope.selectResolveReferences = function() {
+              $scope.select(1);
+              // dont re-resolve references unless environment changes
+              resolveReferences();
+          };
+
 
           $scope.launch = function (launchStackForm) {
             if (launchStackForm.$invalid) {
@@ -81,23 +168,25 @@ angular.module('hz').controller({
     SelectTemplateCtrl: ['$scope',
         function ($scope) {
             $scope.baseFiles = [
-                { label: 'Template', value: 'template', source: 'file' },
-                { label: 'Environment', value: 'environment', source: 'file' }
+                { label: 'Template', value: 'template', source: 'file', required: true },
+                { label: 'Environment', value: 'environment', source: 'file', required: false }
             ];
 
-            $scope.$watchCollection('baseFiles', function () {
-                var valid = true;
-                angular.forEach($scope.baseFiles, function(f) {
-                    valid = valid && (f.url !== undefined || f.file !== undefined || f.raw !== undefined);
-                });
+            var validate = function () {
+                var valid, f;
+                f = $scope.baseFiles[0];
+                valid = (f.url !== undefined || f.file !== undefined || f.raw !== undefined);
                 $scope.$parent.tabs[0].valid = valid;
-            })
+            };
+
+            $scope.$watchCollection('baseFiles[0]', validate);
 
         }],
 
     ResolveReferencesCtrl: ['$scope',
         function ($scope) {
-          $scope.response = response.data;
+          $scope.baseFiles = $scope.launchInstance.references;
+
 
         }],
 

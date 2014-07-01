@@ -162,8 +162,7 @@
 
             $timeout(function () {
               var i = 0;
-              while (i < $scope.tabs.length &&
-                ($scope.tabs[i].valid || $scope.tabs[i].disabled) &&
+              while (i < $scope.tabs.length && ($scope.tabs[i].valid || $scope.tabs[i].disabled) &&
                 ($scope.tabs[i].disabled || i < index)) {
                 i += 1;
               }

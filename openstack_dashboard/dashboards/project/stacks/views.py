@@ -43,12 +43,8 @@ LOG = logging.getLogger(__name__)
 class LaunchStackView(generic.View):
 
     def get(self, request):
-        return http.HttpResponse(json.dumps({
-            'peener': [
-               'peener1',
-               'peener2'
-            ]
-        }), "application/json")
+        return http.HttpResponse(json.dumps('200'
+        ), "application/json")
 
     def post(self, request):
         data = json.loads(self.request.body)
@@ -267,3 +263,11 @@ class JSONView(generic.View):
     def get(self, request, stack_id=''):
         return HttpResponse(project_api.d3_data(request, stack_id=stack_id),
                             content_type="application/json")
+
+class ReferencesView(generic.View):
+    def post(self, request):
+        return "{files: ['file_one','file_two']"
+
+class ParametersView(generic.View):
+    def post(self, request):
+        return "{parameters: ['param_one', 'param_two']"

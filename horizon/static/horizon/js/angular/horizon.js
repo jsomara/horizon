@@ -5,6 +5,7 @@ var horizon_dependencies = ['hz.conf',
                             'ngAnimate',
                             'ngSanitize',
                             'ngCookies',
+                            'ngResource',
                             'angularFileUpload'];
 dependencies = horizon_dependencies.concat(angularModuleExtension);
 var horizonApp = angular.module('hz', dependencies)

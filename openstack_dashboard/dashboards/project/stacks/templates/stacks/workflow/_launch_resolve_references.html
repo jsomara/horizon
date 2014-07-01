@@ -1,19 +1,21 @@
 {% load i18n %}
-<div data-tab data-active="tabs[1].active" data-select="select(1)" >
+<div data-tab data-active="tabs[1].active" data-select="selectResolveReferences()" >
   <div data-tab-heading ng-class="{done: !tabs[1].active && tabs[1].valid}" class="heading">
     {% trans "Step 2 " %} - {% trans "Resolve Environment References" %}
   </div>
-  <div class="form-horizontal row-fluid" ng-form="SelectTemplateForm" ng-controller="SelectTemplateCtrl">
-      <fieldset>
-        <div class="control-group form-field clearfix required">
-            <div ng-repeat="file in baseFiles">
-                <div data-heat-data-upload data-file="file"></div>
+  <div class="left">
+      <div class="form-horizontal row-fluid" ng-form="SelectTemplateForm" ng-controller="SelectTemplateCtrl">
+          <fieldset>
+            <div class="control-group form-field clearfix required">
+                <div ng-repeat="file in references">
+                    <div data-heat-data-upload data-file="file"></div>
+                </div>
             </div>
-        </div>
-      </fieldset>
-      <div class="span4">
-          <h3>{% trans "Step 2" %} - {% trans "Resolve Environment References" %}</h3>
-          {% blocktrans %} Your environment file may require you to upload some additional files.{% endblocktrans %}
+          </fieldset>
       </div>
+  </div>
+  <div class="span4">
+      <h3>{% trans "Step 2" %} - {% trans "Resolve Environment References" %}</h3>
+      {% blocktrans %} Your environment file may require you to upload some additional files.{% endblocktrans %}
   </div>
 </div>
