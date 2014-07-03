@@ -266,8 +266,13 @@ class JSONView(generic.View):
 
 class ReferencesView(generic.View):
     def post(self, request):
-        return "{files: ['file_one','file_two']"
+        data = json.loads(self.request.body)
+        referenced = api.heat.find_references(self.request, **kwargs)
+        return json.dumps(referenced)
+
 
 class ParametersView(generic.View):
     def post(self, request):
-        return "{parameters: ['param_one', 'param_two']"
+        data = json.loads(self.request.body)
+        validated = api.heat.template_validate(self.request, **kwargs)
+        return json.dumps(api.heat.build_parameter_fields(validated))

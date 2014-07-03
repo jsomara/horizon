@@ -35,9 +35,7 @@ urlpatterns = patterns(
         views.JSONView.as_view(), name='d3_data'),
     url(r'^launch_two$', views.LaunchStackView.as_view(), name='launch_two'),
     url(r'^parameters$', views.ParametersView.as_view(), name='parameters'),
-    url(r'^references$', views.ReferencesView.as_view(), name='parameters'),
-
-
+    url(r'^references$', views.ReferencesView.as_view(), name='references'),
     url(r'^launchTemplate$',
         TemplateView.as_view(template_name='project/stacks/workflow/launch.html'),
         name='launchTemplate'),
