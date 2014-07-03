@@ -1,29 +1,29 @@
 angular.module('hz').factory
     ('StackReferences', ['$resource',
         function ($resource) {
-             var StackReferencesFactory = $resource('/project/stacks/references', {
+             var StackReferences = $resource('/project/stacks/references', {}, {
                  references: { method: 'POST' }
              });
 
-             return StackReferencesFactory;
+             return StackReferences;
 
         }]);
 
 angular.module('hz').factory
     ('StackParameters', ['$resource',
         function ($resource) {
-            var StackParametersFactory = $resource('/project/stacks/parameters', {
+            var StackParameters= $resource('/project/stacks/parameters', {}, {
                 parameters: { method: 'POST' }
             });
 
-            return StackParametersFactory;
+            return StackParameters;
         }]);
 
 angular.module('hz').factory
     ('StackLaunch', ['$resource',
         function ($resource) {
 
-             var StackLaunchFactory = $resource('/project/stacks/launch', {
+             var StackLaunchFactory = $resource('/project/stacks/launch', {}, {
                 launch: { method: 'POST' }
             });
 
@@ -77,7 +77,11 @@ angular.module('hz').controller({
           $scope.next = function () {
             $scope.select($scope.index + 1);
           };
-          $scope.launchStack = {};
+
+          $scope.launchStack = { baseFiles: [
+                { label: 'Template', value: 'template', source: 'file', required: true },
+                { label: 'Environment', value: 'environment', source: 'file', required: false }
+            ]};
 
           $scope.select = function (index) {
               if ($scope.index !== index) {
@@ -129,7 +133,7 @@ angular.module('hz').controller({
           // query required references list from horizon
           var resolveReferences = function() {
               console.log("Calling resolve references into horizon");
-              var references = StackReferences.references();
+              var references = StackReferences.references($scope.launchStack.baseFiles[1]);
               references.$promise.then(
                   function(references){
                       createReferences(references);
@@ -167,32 +171,27 @@ angular.module('hz').controller({
 
     SelectTemplateCtrl: ['$scope',
         function ($scope) {
-            $scope.baseFiles = [
-                { label: 'Template', value: 'template', source: 'file', required: true },
-                { label: 'Environment', value: 'environment', source: 'file', required: false }
-            ];
 
             var validate = function () {
                 var valid, f;
-                f = $scope.baseFiles[0];
+                f = $scope.launchStack.baseFiles[0];
                 valid = (f.url !== undefined || f.file !== undefined || f.raw !== undefined);
                 $scope.$parent.tabs[0].valid = valid;
             };
 
-            $scope.$watchCollection('baseFiles[0]', validate);
+            $scope.$watchCollection('launchStack.baseFiles[0]', validate);
 
         }],
 
     ResolveReferencesCtrl: ['$scope',
         function ($scope) {
-          $scope.baseFiles = $scope.launchInstance.references;
-
+          $scope.launchStack.references = {};
 
         }],
 
     ParametersCtrl: ['$scope',
         function ($scope) {
-          $scope.response = response.data;
+          $scope.launchStack.parameters = {};
 
         }],
 
