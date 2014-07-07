@@ -116,10 +116,6 @@ angular.module('hz').directive({
                     { 'label': 'Raw Input', 'value': 'raw' }
                 ];
 
-                $scope.selectAction = function () {
-
-                };
-
                 $scope.onFileSelect = function ($files) {
                     //$files: an array of files selected, each file has name, size, and type.
                     $scope.file.upload = [];
@@ -155,8 +151,7 @@ angular.module('hz').directive({
                                 'id="id_{{file.value}}_source"\n' +
                                 'name="{{file.value}}_source"\n' +
                                 'ng-options="value.value as value.label for value in sourceOptions"\n' +
-                                'ng-model="file.source"\n' +
-                                'ng-change="selectAction()">\n' +
+                                'ng-model="file.source">\n' +
                         '</select>\n' +
                     '</div>\n' +
                 '</div>\n' +

@@ -266,11 +266,19 @@ class JSONView(generic.View):
 
 class ReferencesView(generic.View):
     def post(self, request):
-        referenced = api.heat.find_references(self.request)
-        return json.dumps(referenced)
+        references = json.loads(self.request.body)
+        referenced = api.heat.find_references(references)
+        LOG.error("References from heat api:")
+        LOG.error(referenced)
+        return HttpResponse(json.dumps(referenced), content_type='application/json')
 
 
 class ParametersView(generic.View):
     def post(self, request):
-        validated = api.heat.template_validate(self.request)
-        return json.dumps(api.heat.build_parameter_fields(validated))
+        template = json.loads(self.request.body)
+        LOG.error("Parameters")
+        LOG.error(template)
+        validated = api.heat.template_validate(template)
+        LOG.error("References from heat api:")
+        LOG.error(validated)
+        return json.dumps(api.heat.build_parameter_fields(validated), content_type='application/json')

@@ -1,3 +1,17 @@
+ var getFileData = function(file) {
+      var contents;
+      if (file.source === 'file') {
+          contents = file.upload[0];
+      } else if (file.source === 'raw') {
+          contents = file.raw;
+      } else if (file.source === 'url') {
+          contents = $http.get(file.url);
+      } else {
+          contents = undefined
+      }
+      return contents;
+ };
+
 angular.module('hz').factory
     ('StackReferences', ['$resource',
         function ($resource) {
@@ -36,7 +50,7 @@ angular.module('hz').service
         return {
           start : function () {
             var modalInstance = $modal.open({
-              windowClass: 'fullscreen launch-instancee',
+              windowClass: 'fullscreen launch-instance',
               keyboard: false,
               backdrop: 'static',
               templateUrl: '/project/stacks/launchTemplate',
@@ -63,9 +77,96 @@ angular.module('hz').service
         };
       }]);
 
+angular.module('hz').service
+    ('ParameterService', ['$http', 'StackParameters',
+    function($http, StackParameters) {
+        var getParameterData = function(file) {
+            return {
+                template: getFileData(file)
+            };
+        }
+
+        var createParameters = function(launchStack, parameters) {
+
+        }
+
+        return {
+            getParameters: function(launchStack) {
+                console.log("Calling load parameters into horizon");
+                var stackPayload = getParameterData(launchStack.baseFiles[0]);
+                var parameters = StackParameters.parameters(stackPayload);
+                parameters.$promise.then(
+                  function(parameters){
+                    createParameters(launchStack, parameters);
+                  }
+              )
+            }
+        }
+
+
+}])
+angular.module('hz').service
+    ('ReferenceService', ['$http', 'StackReferences',
+      function ($http, StackReferences) {
+
+         var getReferenceData = function(file) {
+              return {
+                  environment: getFileData(file)
+              };
+          }
+
+          // turn a required reference file into a file object for directive
+          var makeFile = function(file) {
+              return {
+                  label: file.value,
+                  value: file.name,
+                  source: 'file',
+                  required: true };
+          }
+
+           // create files for form from horizon api
+          var createReferences = function(references, launchStack) {
+              launchStack.references = {};
+              launchStack.references.files = [];
+              angular.forEach(references, function(r) {
+                 launchStack.references.files.push(makeFile(r))
+              });
+          }
+
+          return {
+              getReferences: function(launchStack) {
+                  console.log("Calling resolve references into horizon");
+                  var referenceData = getReferenceData(launchStack.baseFiles[1]);
+                  if (referenceData !== undefined) {
+                        var references = StackReferences.references(referenceData);
+                        references.$promise.then(
+                            function(references){
+                                createReferences(references, launchStack);
+                        });
+                  }
+              }
+          }
+
+      }]);
+
+
 angular.module('hz').controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', 'response', 'StackParameters', 'StackReferences',
-        function ($scope, $modalInstance, $timeout, response, StackParameters, StackReferences) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService',
+        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService) {
+
+          // query required parameters list from horizon
+          var loadParameters = function() {
+              ParameterService.getParameters($scope.launchStack);
+          };
+
+          var resolveReferences = function() {
+              ReferenceService.getReferences($scope.launchStack);
+              if ($scope.launchStack.references === undefined || $scope.launchStack.references.files.size === 0) {
+                  // no references, move on
+                  $scope.select(2);
+              }
+          }
+
           $scope.response = response.data;
           $scope.data = [];
           $scope.tabs = [
@@ -85,6 +186,11 @@ angular.module('hz').controller({
 
           $scope.select = function (index) {
               if ($scope.index !== index) {
+                  if (index === 1) {
+                      resolveReferences();
+                  } else if (index === 2) {
+                      loadParameters();
+                  }
                   $timeout(function () {
                       if (!($scope.tabs[index].disabled)) {
                           $scope.index = index;
@@ -95,64 +201,6 @@ angular.module('hz').controller({
                   });
               }
           };
-
-          // create parameters list for directive
-          var createParameters = function(parameters) {
-
-          }
-
-          // turn a required reference file into a file object for directive
-          var makeFile = function(file) {
-              return {
-                  label: file.value,
-                  value: file.name,
-                  source: 'file',
-                  required: true };
-          }
-
-          // create files for form from horizon api
-          var createReferences = function(references) {
-              launchStack.references = {};
-              launchStack.references.files = [];
-              angular.forEach(references, function(r) {
-                 launchStack.referenceForm.files.push(makeFile(r))
-              });
-          }
-
-          // query required parameters list from horizon
-          var loadParameters = function() {
-              console.log("Calling load parameters into horizon");
-              var parameters = StackParameters.parameters();
-              parameters.$promise.then(
-                  function(parameters){
-                    createParameters(parameters);
-                  }
-              )
-          };
-
-          // query required references list from horizon
-          var resolveReferences = function() {
-              console.log("Calling resolve references into horizon");
-              var references = StackReferences.references($scope.launchStack.baseFiles[1]);
-              references.$promise.then(
-                  function(references){
-                      createReferences(references);
-                  }
-              )
-          };
-
-          $scope.selectParameters = function() {
-              $scope.select(2);
-              // dont re-resolve parameters unless template changes
-              loadParameters();
-          };
-
-          $scope.selectResolveReferences = function() {
-              $scope.select(1);
-              // dont re-resolve references unless environment changes
-              resolveReferences();
-          };
-
 
           $scope.launch = function (launchStackForm) {
             if (launchStackForm.$invalid) {
@@ -185,13 +233,11 @@ angular.module('hz').controller({
 
     ResolveReferencesCtrl: ['$scope',
         function ($scope) {
-          $scope.launchStack.references = {};
 
         }],
 
     ParametersCtrl: ['$scope',
         function ($scope) {
-          $scope.launchStack.parameters = {};
 
         }],
 
