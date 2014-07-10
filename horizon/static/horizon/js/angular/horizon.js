@@ -1,4 +1,4 @@
-var horizon_dependencies = ['hz.conf', 'hz.utils', 'ngCookies', 'ngResource'];
+var horizon_dependencies = ['hz.conf', 'hz.utils', 'ngCookies', 'ngResource', 'ngTable'];
 dependencies = horizon_dependencies.concat(angularModuleExtension);
 var horizonApp = angular.module('hz', dependencies)
   .config(['$interpolateProvider', '$httpProvider',
