@@ -1,10 +1,10 @@
  var getFileData = function(file) {
       var contents;
-      if (file.source === 'file') {
+      if (file.source === 'file' && file.upload !== undefined) {
           contents = file.upload[0];
       } else if (file.source === 'raw') {
           contents = file.raw;
-      } else if (file.source === 'url') {
+      } else if (file.source === 'url' && file.url !== undefined && file.url !== '') {
           contents = $http.get(file.url);
       } else {
           contents = undefined
@@ -12,11 +12,19 @@
       return contents;
  };
 
+ var validateInput = function(files) {
+     var valid = true;
+     angular.forEach(files, function(file) {
+         valid = valid && (file.url !== undefined || file.file !== undefined || file.raw !== undefined);
+     })
+     return valid;
+};
+
 angular.module('hz').factory
     ('StackReferences', ['$resource',
         function ($resource) {
              var StackReferences = $resource('/project/stacks/references', {}, {
-                 references: { method: 'POST' }
+                 references: { method: 'POST', isArray: true }
              });
 
              return StackReferences;
@@ -118,30 +126,34 @@ angular.module('hz').service
           // turn a required reference file into a file object for directive
           var makeFile = function(file) {
               return {
-                  label: file.value,
-                  value: file.name,
+                  label: file,
+                  value: file,
                   source: 'file',
                   required: true };
           }
 
            // create files for form from horizon api
           var createReferences = function(references, launchStack) {
-              launchStack.references = {};
-              launchStack.references.files = [];
+              launchStack.references = [];
               angular.forEach(references, function(r) {
-                 launchStack.references.files.push(makeFile(r))
+                 launchStack.references.push(makeFile(r))
               });
           }
 
           return {
-              getReferences: function(launchStack) {
-                  console.log("Calling resolve references into horizon");
+              getReferences: function(launchStack, scope) {
                   var referenceData = getReferenceData(launchStack.baseFiles[1]);
                   if (referenceData !== undefined) {
                         var references = StackReferences.references(referenceData);
                         references.$promise.then(
                             function(references){
+                                console.log("Got references:")
+                                console.log(references)
                                 createReferences(references, launchStack);
+                                 if (launchStack.references === undefined || launchStack.references.size === 0) {
+                                      // no references, move on
+                                      scope.select(2);
+                                 }
                         });
                   }
               }
@@ -161,17 +173,13 @@ angular.module('hz').controller({
 
           var resolveReferences = function() {
               ReferenceService.getReferences($scope.launchStack);
-              if ($scope.launchStack.references === undefined || $scope.launchStack.references.files.size === 0) {
-                  // no references, move on
-                  $scope.select(2);
-              }
           }
 
           $scope.response = response.data;
           $scope.data = [];
           $scope.tabs = [
             {active: false, valid: false},
-            {active: false, valid: false, disabled: true},
+            {active: false, valid: false},
             {active: false, valid: false}];
           $scope.index = 0;
 
@@ -220,12 +228,10 @@ angular.module('hz').controller({
     SelectTemplateCtrl: ['$scope',
         function ($scope) {
 
-            var validate = function () {
-                var valid, f;
-                f = $scope.launchStack.baseFiles[0];
-                valid = (f.url !== undefined || f.file !== undefined || f.raw !== undefined);
+            var validate = function() {
+                valid = validateInput([$scope.launchStack.baseFiles[0]])
                 $scope.$parent.tabs[0].valid = valid;
-            };
+            }
 
             $scope.$watchCollection('launchStack.baseFiles[0]', validate);
 
@@ -233,6 +239,13 @@ angular.module('hz').controller({
 
     ResolveReferencesCtrl: ['$scope',
         function ($scope) {
+
+             var validate = function() {
+                valid = validateInput($scope.launchStack.references);
+                $scope.$parent.tabs[1].valid = valid;
+             }
+
+            $scope.$watch('launchStack.references', validate, true);
 
         }],
 

@@ -175,4 +175,4 @@ def template_validate(request, **kwargs):
     return heatclient(request).stacks.validate(**kwargs)
 
 def find_references(request, **kwargs):
-    return None
+    return ['extra1.yml', 'extra2.yml']
