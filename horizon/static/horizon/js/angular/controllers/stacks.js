@@ -20,6 +20,28 @@
      return valid;
 };
 
+var makeFiles = function(references) {
+    var files = {};
+    angular.forEach(references, function(f) {
+        files[f.value] = getFileData(f);
+    });
+    return files;
+};
+
+var makeParameters = function(parameters) {
+    // TODO implement
+    return parameters;
+}
+
+var makeFinalParams = function(launchStack) {
+  return {
+          environment: getFileData(launchStack.baseFiles[1]),
+          template: getFileData(launchStack.baseFiles[0]),
+          files: makeFiles(launchStack.references),
+          parameters: makeParameters(launchStack.parameters)
+    };
+}
+
 angular.module('hz').factory
     ('StackReferences', ['$resource',
         function ($resource) {
@@ -88,20 +110,23 @@ angular.module('hz').service
 angular.module('hz').service
     ('ParameterService', ['$http', 'StackParameters',
     function($http, StackParameters) {
-        var getParameterData = function(file) {
+        var getParameterData = function(files) {
             return {
-                template: getFileData(file)
+                  environment: getFileData(files.baseFiles[1]),
+                  template: getFileData(files.baseFiles[0]),
+                  files: makeFiles(files.references)
             };
         }
 
         var createParameters = function(launchStack, parameters) {
-
+            console.log('Here are your parameters');
+            console.log(parameters);
         }
 
         return {
             getParameters: function(launchStack) {
                 console.log("Calling load parameters into horizon");
-                var stackPayload = getParameterData(launchStack.baseFiles[0]);
+                var stackPayload = getParameterData(launchStack);
                 var parameters = StackParameters.parameters(stackPayload);
                 parameters.$promise.then(
                   function(parameters){
@@ -117,9 +142,10 @@ angular.module('hz').service
     ('ReferenceService', ['$http', 'StackReferences',
       function ($http, StackReferences) {
 
-         var getReferenceData = function(file) {
+         var getReferenceData = function(files) {
               return {
-                  environment: getFileData(file)
+                  environment: getFileData(files[1]),
+                  template: getFileData(files[0])
               };
           }
 
@@ -142,20 +168,16 @@ angular.module('hz').service
 
           return {
               getReferences: function(launchStack, scope) {
-                  var referenceData = getReferenceData(launchStack.baseFiles[1]);
-                  if (referenceData !== undefined) {
-                        var references = StackReferences.references(referenceData);
-                        references.$promise.then(
-                            function(references){
-                                console.log("Got references:")
-                                console.log(references)
-                                createReferences(references, launchStack);
-                                 if (launchStack.references === undefined || launchStack.references.size === 0) {
-                                      // no references, move on
-                                      scope.select(2);
-                                 }
-                        });
-                  }
+                  var referenceData = getReferenceData(launchStack.baseFiles);
+                  var references = StackReferences.references(referenceData);
+                  references.$promise.then(
+                      function(references){
+                          createReferences(references, launchStack);
+                          if (launchStack.references === undefined || launchStack.references.size === 0) {
+                              // no references, move on
+                              scope.select(2);
+                          }
+                  });
               }
           }
 
@@ -163,8 +185,8 @@ angular.module('hz').service
 
 
 angular.module('hz').controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService',
-        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService', 'StackLaunch',
+        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService, StackLaunch) {
 
           // query required parameters list from horizon
           var loadParameters = function() {
@@ -215,7 +237,7 @@ angular.module('hz').controller({
                 //
             } else {
               $modalInstance.close(
-                $http.post('/workflow/launch_two', angular.toJson($scope.launchStack))
+                  StackLaunch.launch(makeFinalParams($scope.launchStack))
               );
             }
           };
@@ -252,14 +274,19 @@ angular.module('hz').controller({
     ParametersCtrl: ['$scope',
         function ($scope) {
 
+             var validate = function() {
+                // TODO implement
+                valid = true;
+                $scope.$parent.tabs[2].valid = valid;
+             }
+
+            $scope.$watch('launchStack.parameters', validate, true);
         }],
 
     StacksCtrl: ['$scope', 'launchStackWorkflow',
         function ($scope, launchStackWorkflow) {
           $scope.open = launchStackWorkflow.start;
         }]
-
-
 
 
 })

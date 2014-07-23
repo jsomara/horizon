@@ -267,18 +267,28 @@ class JSONView(generic.View):
 class ReferencesView(generic.View):
     def post(self, request):
         references = json.loads(self.request.body)
-        referenced = api.heat.find_references(references)
+        environment = references['environment']
+        template = references['template']
+
+        files, env = api.heat.find_references(request, template, environment)
         LOG.error("References from heat api:")
-        LOG.error(referenced)
-        return HttpResponse(json.dumps(referenced), content_type='application/json')
+        LOG.error(files)
+        return HttpResponse(json.dumps(files), content_type='application/json')
 
 
 class ParametersView(generic.View):
+    def make_params_for_validate(self, body):
+        template = body['template']
+        environment = body['environment']
+        files = body['files']
+        if files is None:
+            files = {}
+        return template, environment, files
+
     def post(self, request):
-        template = json.loads(self.request.body)
-        LOG.error("Parameters")
-        LOG.error(template)
-        validated = api.heat.template_validate(template)
+        body = json.loads(self.request.body)
+        template, env, files = self.make_params_for_validate(body)
+        validated = api.heat.template_validate(self.request, template=template, environment=env, files=files)
         LOG.error("References from heat api:")
         LOG.error(validated)
-        return json.dumps(api.heat.build_parameter_fields(validated), content_type='application/json')
+        return HttpResponse(json.dumps(validated), content_type='application/json')

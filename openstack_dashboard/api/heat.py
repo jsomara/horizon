@@ -14,6 +14,7 @@ import logging
 
 from django.conf import settings
 from heatclient import client as heat_client
+from heatclient.common import template_utils
 from horizon.utils import functions as utils
 from openstack_dashboard.api import base
 
@@ -174,5 +175,5 @@ def resource_metadata_get(request, stack_id, resource_name):
 def template_validate(request, **kwargs):
     return heatclient(request).stacks.validate(**kwargs)
 
-def find_references(request, **kwargs):
-    return ['extra1.yml', 'extra2.yml']
+def find_references(request, template, environment=None):
+    return template_utils.process_raw_environment_and_files(template=template, raw_env=environment)
