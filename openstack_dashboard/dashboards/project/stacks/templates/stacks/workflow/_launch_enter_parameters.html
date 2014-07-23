@@ -4,10 +4,13 @@
     {% trans "Step 3 " %} - {% trans "Enter Stack Parameters" %}
   </div>
   <div class="left">
-     <div class="form-horizontal row-fluid" ng-form="SelectTemplateForm" ng-controller="ParametersCtrl">
+     <div class="form-horizontal row-fluid" ng-form="ParametersForm" ng-controller="ParametersCtrl">
           <fieldset>
-             <div ng-repeat="param in launchStack.parameters">
-                <div data-heat-parameter data-param="param"></div>
+            <div class="control-group form-field clearfix" ng-repeat="p in launchStack.parameters">
+                <div data-heat-parameter param="p"></div>
+
+                {{  p }}
+
             </div>
           </fieldset>
       </div>

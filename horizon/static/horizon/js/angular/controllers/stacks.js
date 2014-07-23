@@ -116,23 +116,33 @@ angular.module('hz').service
                   template: getFileData(files.baseFiles[0]),
                   files: makeFiles(files.references)
             };
+        };
+
+        var fixParam = function(param) {
+            p = {};
+            p.label = param.Label;
+            p.description = param.Description;
+            p.type = param.Type;
+            return p;
         }
 
         var createParameters = function(launchStack, parameters) {
-            console.log('Here are your parameters');
-            console.log(parameters);
+            launchStack.parameters = [];
+            angular.forEach(parameters.Parameters, function(p) {
+                launchStack.parameters.push(fixParam(p));
+            });
+
         }
 
         return {
             getParameters: function(launchStack) {
-                console.log("Calling load parameters into horizon");
                 var stackPayload = getParameterData(launchStack);
                 var parameters = StackParameters.parameters(stackPayload);
                 parameters.$promise.then(
                   function(parameters){
                     createParameters(launchStack, parameters);
                   }
-              )
+                );
             }
         }
 
@@ -274,7 +284,13 @@ angular.module('hz').controller({
     ParametersCtrl: ['$scope',
         function ($scope) {
 
+             console.log('Here are your parameters');
+             console.log($scope.launchStack.parameters);
+
              var validate = function() {
+
+                 console.log('Here are your parameters');
+                 console.log($scope.launchStack.parameters);
                 // TODO implement
                 valid = true;
                 $scope.$parent.tabs[2].valid = valid;
