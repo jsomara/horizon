@@ -210,9 +210,9 @@ angular.module('hz').controller({
           $scope.response = response.data;
           $scope.data = [];
           $scope.tabs = [
-            {active: false, valid: false},
-            {active: false, valid: false},
-            {active: false, valid: false}];
+            {active: false, valid: false, recheck:true},
+            {active: false, valid: false, recheck:true},
+            {active: false, valid: false, recheck:true}];
           $scope.index = 0;
 
           $scope.next = function () {
@@ -226,10 +226,14 @@ angular.module('hz').controller({
 
           $scope.select = function (index) {
               if ($scope.index !== index) {
-                  if (index === 1) {
+                  if (index === 1 && $scope.tabs[0].recheck) {
+                      console.log("Horizon refs call");
                       resolveReferences();
-                  } else if (index === 2) {
+                      $scope.tabs[0].recheck = false;
+                  } else if (index === 2 && $scope.tabs[1].recheck) {
+                      console.log("Horizon params call");
                       loadParameters();
+                      $scope.tabs[1].recheck = false;
                   }
                   $timeout(function () {
                       if (!($scope.tabs[index].disabled)) {
@@ -263,6 +267,7 @@ angular.module('hz').controller({
             var validate = function() {
                 valid = validateInput([$scope.launchStack.baseFiles[0]])
                 $scope.$parent.tabs[0].valid = valid;
+                $scope.$parent.tabs[0].recheck = true
             }
 
             $scope.$watchCollection('launchStack.baseFiles[0]', validate);
@@ -275,6 +280,8 @@ angular.module('hz').controller({
              var validate = function() {
                 valid = validateInput($scope.launchStack.references);
                 $scope.$parent.tabs[1].valid = valid;
+                $scope.$parent.tabs[1].recheck = true
+
              }
 
             $scope.$watch('launchStack.references', validate, true);
@@ -294,6 +301,8 @@ angular.module('hz').controller({
                 // TODO implement
                 valid = true;
                 $scope.$parent.tabs[2].valid = valid;
+                $scope.$parent.tabs[2].recheck = true
+
              }
 
             $scope.$watch('launchStack.parameters', validate, true);
