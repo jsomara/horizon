@@ -87,38 +87,9 @@ angular.module('hz').directive({
                     '</div>\n ' +
                 '</div>\n',
 
-            link: function (scope, element, attrs, modelCtrl, transclude)    {
-                scope.modelCtrl = modelCtrl;
-                scope.$transcludeFn = transclude;
+            link: function (scope, element, attrs)    {
 
             }
         };
     }]
 });
-
-angular.module('hz').directive({
-    heatParameter: [function () {
-
-        return {
-            restrict: 'A',
-           // require: '^file',
-            transclude: true,
-            scope: {
-                param: '='
-            },
-            controller: ['$scope', function ($scope) {
-            }],
-            template:
-               '<label>{{ param.label}}: {{  param.description }}</label>\n' +
-               '<span class="help-block" style="display: none;"> {{ param.description }}  </span>\n' +
-               '<div class="input">\n' +
-               '   <input name="{{ param.label }}" ng-model="param.value"/>\n' +
-               '</div>',
-            link: function (scope, element, attrs, modelCtrl, transclude)    {
-                scope.modelCtrl = modelCtrl;
-                scope.$transcludeFn = transclude;
-
-            }
-        };
-    }]
-})
