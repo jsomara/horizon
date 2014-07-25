@@ -13,8 +13,11 @@
 import json
 import logging
 
+
+
 from horizon import exceptions
 from horizon import forms
+from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
@@ -46,11 +49,20 @@ class LaunchStackView(generic.View):
         return http.HttpResponse(json.dumps('200'
         ), "application/json")
 
-    def post(self, request):
-        data = json.loads(self.request.body)
 
-        LOG.error("Got :")
-        LOG.error(data)
+    def fields_from_request(self, request):
+        body = json.loads(self.request.body)
+        return body['parameters']
+
+
+    def post(self, request):
+        try:
+            fields = self.get_fields_from_request(self.request)
+            api.heat.stack_create(self.request, **fields)
+            messages.success(request, _("Stack creation started."))
+            return True
+        except Exception:
+            exceptions.handle(request)
 
 
 class IndexView(tables.DataTableView):
@@ -285,10 +297,39 @@ class ParametersView(generic.View):
             files = {}
         return template, environment, files
 
+    def add_base_params(self, validated):
+        if validated is None:
+            validated = { 'Parameters': {} }
+
+        validated['Parameters']['stack_name'] = {
+            'Label': 'Stack Name',
+            'Description': 'Name of the stack to create.',
+            'Type': 'String'
+        }
+        validated['Parameters']['timeout_mins'] = {
+            'Label': 'Creation Timeout (minutes)',
+            'Description': 'Stack creation timeout in minutes.',
+            'Type': 'Integer'
+        }
+        validated['Parameters']['enable_rollback'] = {
+            'Label': 'Rollback On Failure',
+            'Description': 'Enable rollback on create/update failure.',
+            'Type': 'Integer'
+        }
+        validated['Parameters']['password'] = {
+            'Label': 'Admin Password',
+            'Description': 'Password for the user to perform operations throughout the lifecycle of the stack',
+            'Type': 'Password'
+        }
+
+        return validated
+
+
     def post(self, request):
         body = json.loads(self.request.body)
         template, env, files = self.make_params_for_validate(body)
         validated = api.heat.template_validate(self.request, template=template, environment=env, files=files)
+        params = self.add_base_params(validated)
         LOG.error("References from heat api:")
-        LOG.error(validated)
-        return HttpResponse(json.dumps(validated), content_type='application/json')
+        LOG.error(params)
+        return HttpResponse(json.dumps(params), content_type='application/json')

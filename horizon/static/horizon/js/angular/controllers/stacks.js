@@ -31,16 +31,7 @@ var makeFiles = function(references) {
 var makeParameters = function(parameters) {
     // TODO implement
     return parameters;
-}
-
-var makeFinalParams = function(launchStack) {
-  return {
-          environment: getFileData(launchStack.baseFiles[1]),
-          template: getFileData(launchStack.baseFiles[0]),
-          files: makeFiles(launchStack.references),
-          parameters: makeParameters(launchStack.parameters)
-    };
-}
+};
 
 angular.module('hz').factory
     ('StackReferences', ['$resource',
@@ -108,8 +99,8 @@ angular.module('hz').service
       }]);
 
 angular.module('hz').service
-    ('ParameterService', ['$http', 'StackParameters',
-    function($http, StackParameters) {
+    ('ParameterService', ['$http', 'StackParameters', 'hzMessages',
+    function($http, StackParameters, hzMessages) {
         var getParameterData = function(files) {
             return {
                   environment: getFileData(files.baseFiles[1]),
@@ -135,22 +126,24 @@ angular.module('hz').service
         }
 
         return {
-            getParameters: function(launchStack) {
+            getParameters: function(launchStack, scope) {
                 var stackPayload = getParameterData(launchStack);
                 var parameters = StackParameters.parameters(stackPayload);
                 parameters.$promise.then(
                   function(parameters){
                     createParameters(launchStack, parameters);
+                  }, function(error) {
+                    hzMessages.alert(error.data, 'error');
+                    scope.select(1);
                   }
                 );
             }
         }
+}]);
 
-
-}])
 angular.module('hz').service
-    ('ReferenceService', ['$http', 'StackReferences',
-      function ($http, StackReferences) {
+    ('ReferenceService', ['$http', 'StackReferences', 'hzMessages',
+      function ($http, StackReferences, hzMessages) {
 
          var getReferenceData = function(files) {
               return {
@@ -187,7 +180,11 @@ angular.module('hz').service
                               // no references, move on
                               scope.select(2);
                           }
-                  });
+                      }, function(error) {
+                         hzMessages.alert(error.data, 'error');
+                         scope.select(0);
+                      }
+                  );
               }
           }
 
@@ -200,11 +197,20 @@ angular.module('hz').controller({
 
           // query required parameters list from horizon
           var loadParameters = function() {
-              ParameterService.getParameters($scope.launchStack);
+              ParameterService.getParameters($scope.launchStack, $scope);
           };
 
           var resolveReferences = function() {
-              ReferenceService.getReferences($scope.launchStack);
+              ReferenceService.getReferences($scope.launchStack, $scope);
+          };
+
+          var makeFinalParams = function(launchStack) {
+              return {
+                  environment: getFileData(launchStack.baseFiles[1]),
+                  template: getFileData(launchStack.baseFiles[0]),
+                  files: makeFiles(launchStack.references),
+                  parameters: makeParameters(launchStack.parameters)
+              };
           }
 
           $scope.response = response.data;
