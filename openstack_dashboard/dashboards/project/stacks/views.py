@@ -43,28 +43,6 @@ from openstack_dashboard.dashboards.project.stacks \
 
 LOG = logging.getLogger(__name__)
 
-class LaunchStackView(generic.View):
-
-    def get(self, request):
-        return http.HttpResponse(json.dumps('200'
-        ), "application/json")
-
-
-    def fields_from_request(self, request):
-        body = json.loads(self.request.body)
-        return body['parameters']
-
-
-    def post(self, request):
-        try:
-            fields = self.get_fields_from_request(self.request)
-            api.heat.stack_create(self.request, **fields)
-            messages.success(request, _("Stack creation started."))
-            return True
-        except Exception:
-            exceptions.handle(request)
-
-
 class IndexView(tables.DataTableView):
     table_class = project_tables.StacksTable
     template_name = 'project/stacks/index.html'
@@ -275,6 +253,57 @@ class JSONView(generic.View):
     def get(self, request, stack_id=''):
         return HttpResponse(project_api.d3_data(request, stack_id=stack_id),
                             content_type="application/json")
+
+
+class LaunchStackView(generic.View):
+
+    def get(self, request):
+        return http.HttpResponse(json.dumps('200'
+        ), "application/json")
+
+
+    def build_base_parameters(self, data):
+        fields = {
+            'stack_name': data.pop('Stack Name'),
+            'timeout_mins': data.pop('Creation Timeout (minutes)'),
+            'disable_rollback': not(data.pop('Rollback On Failure')),
+            'password': data.pop('Admin Password')
+        }
+        return fields
+
+
+    def convert_params_to_dict(self, data):
+        fields = {}
+        for param in data:
+            fields[param.get('label')] = param.get('value')
+        return fields
+
+
+    def fields_from_request(self, request):
+        body = json.loads(self.request.body)
+        params = self.convert_params_to_dict(body['parameters'])
+        fields = self.build_base_parameters(params)
+
+        fields['parameters'] = params
+        fields['environment'] = body['environment']
+        fields['template'] = body['template']
+        fields['files'] = body['files']
+
+        LOG.error('Compiled fields')
+        LOG.error(fields)
+        return fields
+
+
+    def post(self, request):
+        try:
+            fields = self.fields_from_request(self.request)
+            api.heat.stack_create(self.request, **fields)
+            messages.success(request, _("Stack creation started."))
+            return True
+        except Exception:
+            LOG.exception('exception')
+            exceptions.handle(request)
+
 
 class ReferencesView(generic.View):
     def post(self, request):

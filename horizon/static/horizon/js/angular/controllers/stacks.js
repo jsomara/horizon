@@ -58,7 +58,7 @@ angular.module('hz').factory
     ('StackLaunch', ['$resource',
         function ($resource) {
 
-             var StackLaunchFactory = $resource('/project/stacks/launch', {}, {
+             var StackLaunchFactory = $resource('/project/stacks/launch_two', {}, {
                 launch: { method: 'POST' }
             });
 
@@ -91,7 +91,6 @@ angular.module('hz').service
               if (error === 'cancel') {
                 hzMessages.alert(gettext('Launch stack has been aborted'), 'info');
               } else {
-                hzMessages.alert(error.data, 'error');
               }
             });
           }
@@ -192,8 +191,8 @@ angular.module('hz').service
 
 
 angular.module('hz').controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService', 'StackLaunch',
-        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService, StackLaunch) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages',
+        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService, StackLaunch, hzMessages) {
 
           // query required parameters list from horizon
           var loadParameters = function() {
@@ -256,9 +255,14 @@ angular.module('hz').controller({
             if (launchStackForm.$invalid) {
                 //
             } else {
-              $modalInstance.close(
-                  StackLaunch.launch(makeFinalParams($scope.launchStack))
-              );
+                var launch = StackLaunch.launch(makeFinalParams($scope.launchStack));
+                launch.$promise.then(
+                    function(response) {
+                       $modalInstance.close();
+                    }, function(error) {
+                       hzMessages.alert(error.data, 'error');
+                    }
+                )
             }
           };
 
