@@ -1,7 +1,7 @@
  var getFileData = function(file) {
       var contents;
       if (file.source === 'file' && file.upload !== undefined) {
-          contents = file.upload[0];
+          contents = file.upload[0].data;
       } else if (file.source === 'raw') {
           contents = file.raw;
       } else if (file.source === 'url' && file.url !== undefined && file.url !== '') {
@@ -15,7 +15,7 @@
  var validateInput = function(files) {
      var valid = true;
      angular.forEach(files, function(file) {
-         valid = valid && (file.url !== undefined || file.file !== undefined || file.raw !== undefined);
+         valid = valid && (file.url !== undefined || file.upload !== undefined || file.raw !== undefined);
      })
      return valid;
 };
@@ -275,7 +275,7 @@ angular.module('hz').controller({
         function ($scope) {
 
             var validate = function() {
-                valid = validateInput([$scope.launchStack.baseFiles[0]])
+                valid = validateInput([$scope.launchStack.baseFiles[0]]);
                 $scope.$parent.tabs[0].valid = valid;
                 $scope.$parent.tabs[0].recheck = true
             }
