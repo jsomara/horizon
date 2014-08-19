@@ -308,9 +308,15 @@ class LaunchStackView(generic.View):
 class ReferencesView(generic.View):
     def post(self, request):
         references = json.loads(self.request.body)
-        environment = references['environment']
-        template = references['template']
 
+        template = references.get('template', None)
+        environment = references.get('environment', None)
+
+        if template is None:
+            raise "Template is required"
+        else:
+            LOG.error("Loaded template:")
+            LOG.error(template)
         files, env = api.heat.find_references(request, template, environment)
         LOG.error("References from heat api:")
         LOG.error(files)

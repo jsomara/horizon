@@ -1,36 +1,12 @@
- var getFileData = function(file) {
-      var contents;
-      if (file.source === 'file' && file.upload !== undefined) {
-          contents = file.upload[0].data;
-      } else if (file.source === 'raw') {
-          contents = file.raw;
-      } else if (file.source === 'url' && file.url !== undefined && file.url !== '') {
-          contents = $http.get(file.url);
-      } else {
-          contents = undefined
-      }
-      return contents;
- };
-
  var validateInput = function(files) {
      var valid = true;
      angular.forEach(files, function(file) {
-         valid = valid && (file.url !== undefined || file.upload !== undefined || file.raw !== undefined);
+         valid = valid && (
+             (file.url !== undefined && file.url !== '') ||
+             (file.upload !== undefined) ||
+             (file.raw !== undefined && file.raw !== ''));
      })
      return valid;
-};
-
-var makeFiles = function(references) {
-    var files = {};
-    angular.forEach(references, function(f) {
-        files[f.value] = getFileData(f);
-    });
-    return files;
-};
-
-var makeParameters = function(parameters) {
-    // TODO implement
-    return parameters;
 };
 
 angular.module('hz').factory
@@ -98,13 +74,70 @@ angular.module('hz').service
       }]);
 
 angular.module('hz').service
-    ('ParameterService', ['$http', 'StackParameters', 'hzMessages',
-    function($http, StackParameters, hzMessages) {
+('HeatFileService', ['hzMessages', '$http',
+    function (hzMessages, $http) {
+        var self = this;
+
+        self.getFileData = function(file) {
+            var contents;
+            if (file.source === 'file' && file.upload !== undefined) {
+                contents = file.upload[0].data;
+            } else if (file.source === 'raw') {
+                contents = file.raw;
+            } else if (file.source === 'url' && file.url !== undefined && file.url !== '') {
+                console.log("MAKING JSONP CALL:");
+                $http.jsonp(file.url).
+                    success(function(data, status, headers, config) {
+                        console.log("JSONP SUCCESS");
+
+                        contents = data;
+                        console.log("Downloaded some data:");
+                        console.log(console);
+                    }).
+                    error(function(data, status, headers, config) {
+                        console.log("JSONP ERROR");
+                      // called asynchronously if an error occurs
+                      // or server returns response with an error status.
+                    });
+            } else {
+                contents = undefined
+            }
+            return contents;
+        };
+
+        self.validateInput = function(files) {
+            var valid = true;
+            angular.forEach(files, function(file) {
+                valid = valid && (
+                    (file.url !== undefined && file.url !== '') ||
+                    (file.upload !== undefined) ||
+                    (file.raw !== undefined && file.raw !== ''));
+            })
+            return valid;
+        };
+
+        self.makeFiles = function(references) {
+            var files = {};
+            angular.forEach(references, function(f) {
+                files[f.value] = getFileData(f);
+            });
+            return files;
+        };
+
+        self.makeParameters = function(parameters) {
+            // TODO implement
+            return parameters;
+        };
+    }]);
+
+angular.module('hz').service
+    ('ParameterService', ['StackParameters', 'hzMessages', 'HeatFileService',
+    function(StackParameters, hzMessages, HeatFileServce) {
         var getParameterData = function(files) {
             return {
-                  environment: getFileData(files.baseFiles[1]),
-                  template: getFileData(files.baseFiles[0]),
-                  files: makeFiles(files.references)
+                  environment: HeatFileService.getFileData(files.baseFiles[1]),
+                  template: HeatFileService.getFileData(files.baseFiles[0]),
+                  files: HeatFileService.makeFiles(files.references)
             };
         };
 
@@ -141,13 +174,13 @@ angular.module('hz').service
 }]);
 
 angular.module('hz').service
-    ('ReferenceService', ['$http', 'StackReferences', 'hzMessages',
-      function ($http, StackReferences, hzMessages) {
+    ('ReferenceService', ['StackReferences', 'hzMessages', 'HeatFileService',
+      function (StackReferences, hzMessages, HeatFileService) {
 
          var getReferenceData = function(files) {
               return {
-                  environment: getFileData(files[1]),
-                  template: getFileData(files[0])
+                  environment: HeatFileService.getFileData(files[1]),
+                  template: HeatFileService.getFileData(files[0])
               };
           }
 
@@ -171,6 +204,8 @@ angular.module('hz').service
           return {
               getReferences: function(launchStack, scope) {
                   var referenceData = getReferenceData(launchStack.baseFiles);
+                  console.log("Step 1 parameters;");
+                  console.log(referenceData);
                   var references = StackReferences.references(referenceData);
                   references.$promise.then(
                       function(references){
@@ -191,8 +226,8 @@ angular.module('hz').service
 
 
 angular.module('hz').controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout', '$http', 'response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages',
-        function ($scope, $modalInstance, $timeout, $http, response, ParameterService, ReferenceService, StackLaunch, hzMessages) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout','response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages', 'HeatFileService',
+        function ($scope, $modalInstance, $timeout, response, ParameterService, ReferenceService, StackLaunch, hzMessages, HeatFileService) {
 
           // query required parameters list from horizon
           var loadParameters = function() {
@@ -205,8 +240,8 @@ angular.module('hz').controller({
 
           var makeFinalParams = function(launchStack) {
               return {
-                  environment: getFileData(launchStack.baseFiles[1]),
-                  template: getFileData(launchStack.baseFiles[0]),
+                  environment:  HeatFileService.getFileData(launchStack.baseFiles[1]),
+                  template:  HeatFileService.getFileData(launchStack.baseFiles[0]),
                   files: makeFiles(launchStack.references),
                   parameters: makeParameters(launchStack.parameters)
               };
