@@ -2,7 +2,6 @@
      var valid = true;
      angular.forEach(files, function(file) {
          valid = valid && (
-             (file.url !== undefined && file.url !== '') ||
              (file.upload !== undefined) ||
              (file.raw !== undefined && file.raw !== ''));
      })
@@ -84,36 +83,10 @@ angular.module('hz').service
                 contents = file.upload[0].data;
             } else if (file.source === 'raw') {
                 contents = file.raw;
-            } else if (file.source === 'url' && file.url !== undefined && file.url !== '') {
-                console.log("MAKING JSONP CALL:");
-                $http.jsonp(file.url).
-                    success(function(data, status, headers, config) {
-                        console.log("JSONP SUCCESS");
-
-                        contents = data;
-                        console.log("Downloaded some data:");
-                        console.log(console);
-                    }).
-                    error(function(data, status, headers, config) {
-                        console.log("JSONP ERROR");
-                      // called asynchronously if an error occurs
-                      // or server returns response with an error status.
-                    });
             } else {
                 contents = undefined
             }
             return contents;
-        };
-
-        self.validateInput = function(files) {
-            var valid = true;
-            angular.forEach(files, function(file) {
-                valid = valid && (
-                    (file.url !== undefined && file.url !== '') ||
-                    (file.upload !== undefined) ||
-                    (file.raw !== undefined && file.raw !== ''));
-            })
-            return valid;
         };
 
         self.makeFiles = function(references) {

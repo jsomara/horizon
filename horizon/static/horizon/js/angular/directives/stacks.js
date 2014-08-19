@@ -13,10 +13,9 @@ angular.module('hz').directive({
             },
             controller: ['$scope', function ($scope) {
 
-                $scope.templateSource = 'url';
+                $scope.templateSource = 'raw';
 
                 $scope.sourceOptions = [
-                    { 'label': 'URL', 'value': 'url' },
                     { 'label': 'File', 'value': 'file' },
                     { 'label': 'Raw Input', 'value': 'raw' }
                 ];
@@ -72,13 +71,6 @@ angular.module('hz').directive({
                       '<input class="switched" name="{$ file.value $}_upload" type="file" ng-file-select="onFileSelect($files,file.upload)">\n' +
                     '</div>\n' +
                 '</div>\n'+
-                '<div class="control-group form-field clearfix" ng-show="file.source === \'url\'">\n' +
-                    '<label for="id_{$ file.value $}_url">{$ file.label $} URL:</label>\n' +
-                    '<span class="help-block" style="display: none;"> An external (HTTP) URL to load the {$ file.value $} from.  </span>\n' +
-                    '<div class="input">\n' +
-                      '<input class="switched" ng-model="file.url"  name="{$ file.value $}_url" type="text">\n' +
-                    '</div>\n' +
-                '</div>\n ' +
                 '<div class="control-group form-field clearfix" ng-show="file.source === \'raw\'">\n ' +
                     '<label for="id_{$ file.value $}_data">{$ file.label$} Data:</label>\n' +
                     '<span class="help-block" style="display: none;"> The raw contents of the {$ file.value $}.  </span>\n ' +
