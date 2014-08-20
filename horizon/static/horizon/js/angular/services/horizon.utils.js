@@ -61,5 +61,28 @@
   angular.module('hz.utils.hzUtils', ['hz.conf'])
     .service('hzUtils', ['hzConfig', '$log', '$rootScope', '$compile', utils]);
 
-  angular.module('hz.utils', ['hz.utils.hzUtils']);
+  angular.module('hz.utils.JSONCache', [])
+        .provider('JSONCache', function () {
+            this.$get = ['$cacheFactory', function ($cacheFactory) {
+                return $cacheFactory('JSON');
+            }];
+        })
+        .directive('script', ['JSONCache', '$rootScope',
+            function ($JSONCache, $rootScope) {
+                return {
+                    restrict: 'E',
+                    terminal: true,
+                    compile: function (element, attr) {
+                        if (attr.type === 'application/json') {
+                            var jsonID = attr.id,
+                            // IE is not consistent, in scripts we have to read .text but in
+                            // other nodes we have to read .textContent
+                                text = element[0].text;
+                            $JSONCache.put(jsonID, $rootScope.$eval(text));
+                        }
+                    }
+                };
+            }]);
+
+  angular.module('hz.utils', ['hz.utils.hzUtils', 'hz.utils.JSONCache']);
 }());

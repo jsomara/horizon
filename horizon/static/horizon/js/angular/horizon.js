@@ -21,6 +21,7 @@ var horizonApp = angular.module('hz', dependencies)
       //expose the configuration for horizon legacy variable
       horizon.conf = hzConfig;
       horizon.utils = hzUtils;
+      horizon.msg = hzMessages;
       angular.extend(horizon.cookies = {}, $cookieStore);
       horizon.cookies.put = function (key, value) {
         //cookies are updated at the end of current $eval, so for the horizon

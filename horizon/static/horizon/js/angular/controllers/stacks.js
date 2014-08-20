@@ -73,8 +73,8 @@ angular.module('hz').service
       }]);
 
 angular.module('hz').service
-('HeatFileService', ['hzMessages', '$http',
-    function (hzMessages, $http) {
+('HeatFileService', ['hzMessages',
+    function (hzMessages) {
         var self = this;
 
         self.getFileData = function(file) {
@@ -92,7 +92,7 @@ angular.module('hz').service
         self.makeFiles = function(references) {
             var files = {};
             angular.forEach(references, function(f) {
-                files[f.value] = getFileData(f);
+                files[f.value] = self.getFileData(f);
             });
             return files;
         };
@@ -105,7 +105,7 @@ angular.module('hz').service
 
 angular.module('hz').service
     ('ParameterService', ['StackParameters', 'hzMessages', 'HeatFileService',
-    function(StackParameters, hzMessages, HeatFileServce) {
+    function(StackParameters, hzMessages, HeatFileService) {
         var getParameterData = function(files) {
             return {
                   environment: HeatFileService.getFileData(files.baseFiles[1]),
@@ -205,6 +205,8 @@ angular.module('hz').controller({
           // query required parameters list from horizon
           var loadParameters = function() {
               ParameterService.getParameters($scope.launchStack, $scope);
+              hzMessages.alert("loaded your parameters", 'error');
+
           };
 
           var resolveReferences = function() {
@@ -240,11 +242,9 @@ angular.module('hz').controller({
           $scope.select = function (index) {
               if ($scope.index !== index) {
                   if (index === 1 && $scope.tabs[0].recheck) {
-                      console.log("Horizon refs call");
                       resolveReferences();
                       $scope.tabs[0].recheck = false;
                   } else if (index === 2 && $scope.tabs[1].recheck) {
-                      console.log("Horizon params call");
                       loadParameters();
                       $scope.tabs[1].recheck = false;
                   }
@@ -309,10 +309,9 @@ angular.module('hz').controller({
     ParametersCtrl: ['$scope',
         function ($scope) {
 
-             console.log('Here are your parameters');
-             console.log($scope.launchStack.parameters);
 
              var validate = function() {
+
 
                  console.log('Here are your parameters');
                  console.log($scope.launchStack.parameters);

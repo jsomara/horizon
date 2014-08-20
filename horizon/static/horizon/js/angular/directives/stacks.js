@@ -41,8 +41,6 @@ angular.module('hz').directive({
                         $scope.file.upload.push(upload);
                         //.xhr(function(xhr){xhr.upload.addEventListener(...)})// access and attach any event listener to XMLHttpRequest.
                     }
-                    console.log("Binding file:");
-                    console.log($scope.file);
                     /* alternative way of uploading, send the file binary with the file's content-type.
                      Could be used to upload files to CouchDB, imgur, etc... html5 FileReader is needed.
                      It could also be used to monitor the progress of a normal http post/put request with large data*/

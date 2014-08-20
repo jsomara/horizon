@@ -16,11 +16,15 @@ import datetime
 
 import iso8601
 
+import json
+
 from django.template.defaultfilters import register  # noqa
 from django.template.defaultfilters import timesince  # noqa
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
+from horizon.utils import functions
 
 
 @register.filter
@@ -37,6 +41,18 @@ def parse_isotime(timestr, default=None):
         return iso8601.parse_date(timestr)
     except (iso8601.ParseError, TypeError):
         return default or ''
+
+
+@register.filter
+def to_json_safe(obj):
+    """This dumps an object in JSON in a safe way, for angular purpose.
+    """
+    try:
+        return json.dumps(
+            obj, ensure_ascii=False, cls=functions.JSONSafeEncoder
+        )
+    except TypeError:
+        return ''
 
 
 @register.filter
