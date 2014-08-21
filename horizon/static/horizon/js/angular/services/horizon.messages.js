@@ -1,6 +1,3 @@
-/**
- * Created by jomara on 6/17/14.
- */
 /*global angular, gettext*/
 (function () {
   'use strict';

@@ -1,4 +1,7 @@
- var validateInput = function(files) {
+/*global angular, gettext*/
+'use strict';
+
+var validateInput = function(files) {
      var valid = true;
      angular.forEach(files, function(file) {
          valid = valid && (
@@ -115,7 +118,7 @@ angular.module('hz').service
         };
 
         var fixParam = function(param) {
-            p = {};
+            var p = {};
             p.label = param.Label;
             p.description = param.Description;
             p.type = param.Type;
@@ -188,8 +191,16 @@ angular.module('hz').service
                               scope.select(2);
                           }
                       }, function(error) {
-                         hzMessages.alert(error.data, 'error');
-                         scope.select(0);
+                          var msg = gettext("An error occured parsing your template. Please try another one");
+                          console.log("Here is your error:");
+                          console.log(error);
+
+                          if (error.data !== undefined) {
+                              msg = error.data;
+                          }
+
+                          hzMessages.alert(msg, 'error');
+                          scope.select(0);
                       }
                   );
               }
@@ -205,8 +216,6 @@ angular.module('hz').controller({
           // query required parameters list from horizon
           var loadParameters = function() {
               ParameterService.getParameters($scope.launchStack, $scope);
-              hzMessages.alert("loaded your parameters", 'error');
-
           };
 
           var resolveReferences = function() {
@@ -283,7 +292,7 @@ angular.module('hz').controller({
         function ($scope) {
 
             var validate = function() {
-                valid = validateInput([$scope.launchStack.baseFiles[0]]);
+                var valid = validateInput([$scope.launchStack.baseFiles[0]]);
                 $scope.$parent.tabs[0].valid = valid;
                 $scope.$parent.tabs[0].recheck = true
             }
@@ -296,7 +305,7 @@ angular.module('hz').controller({
         function ($scope) {
 
              var validate = function() {
-                valid = validateInput($scope.launchStack.references);
+                var valid = validateInput($scope.launchStack.references);
                 $scope.$parent.tabs[1].valid = valid;
                 $scope.$parent.tabs[1].recheck = true
 
@@ -315,10 +324,10 @@ angular.module('hz').controller({
 
                  console.log('Here are your parameters');
                  console.log($scope.launchStack.parameters);
-                // TODO implement
-                valid = true;
-                $scope.$parent.tabs[2].valid = valid;
-                $scope.$parent.tabs[2].recheck = true
+                 // TODO implement
+                 var valid = true;
+                 $scope.$parent.tabs[2].valid = valid;
+                 $scope.$parent.tabs[2].recheck = true
 
              }
 

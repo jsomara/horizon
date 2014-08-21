@@ -313,10 +313,8 @@ class ReferencesView(generic.View):
         environment = references.get('environment', None)
 
         if template is None:
-            raise "Template is required"
-        else:
-            LOG.error("Loaded template:")
-            LOG.error(template)
+            raise Exception("Template is required")
+
         files, env = api.heat.find_references(request, template, environment)
         LOG.error("References from heat api:")
         LOG.error(files)

@@ -357,6 +357,73 @@ class StackTests(test.TestCase):
         self.assertFormError(res, "form", 'stack_name', error)
 
 
+
+
+    def test_get_parameters_without_reference(self):
+        template = self.stack_templates.first()
+        environment = self.stack_environments.first()
+        # assert parameters still return
+        self.assertEqual(1,1)
+
+
+
+    def test_get_parameters(self):
+        template = self.stack_templates.first()
+        environment = self.stack_environments.first()
+        # assert some params returned
+        self.assertEqual(1,1)
+
+
+    def test_invalid_template(self):
+        template = self.stack_templates.first()
+        environment = self.stack_environments.first()
+        # assert exception raised about invalid template
+        self.assertEqual(1,1)
+
+
+    def test_invalid_environment(self):
+        template = self.stack_templates.first()
+        environment = self.stack_environments.first()
+
+
+    @test.create_stubs({api.heat: ('find_references',)})
+    def test_get_empty_references(self):
+        template = self.ref_templates.first()
+        form_data = { 'template': template.data }
+
+        api.heat.find_references(IsA(http.HttpRequest), template.data, None) \
+            .AndReturn(({}, {}))
+        self.mox.ReplayAll()
+
+        url = reverse('horizon:project:stacks:references')
+        res = self.client.post(url, json.dumps(form_data),
+            content_type="application/json")
+
+        references = json.loads(res.content)
+        self.assertEqual(len(references), 0)
+
+    @test.create_stubs({api.heat: ('find_references',)})
+    def test_find_references(self):
+        template = self.ref_templates.first()
+        environment = self.ref_environments.first()
+
+        api.heat.find_references(IsA(http.HttpRequest),
+            template.data, environment.data)\
+            .AndReturn((['reference_one.yaml'], {}))
+        self.mox.ReplayAll()
+
+        form_data = { 'template': template.data,
+                      'environment': environment.data }
+
+        url = reverse('horizon:project:stacks:references')
+        res = self.client.post(url, json.dumps(form_data),
+            content_type="application/json")
+
+        references = json.loads(res.content)
+        self.assertEqual(references, ['reference_one.yaml'])
+
+
+
 class TemplateFormTests(test.TestCase):
 
     class SimpleFile(object):
