@@ -357,34 +357,96 @@ class StackTests(test.TestCase):
         self.assertFormError(res, "form", 'stack_name', error)
 
 
-
-
+    @test.create_stubs({api.heat: ('template_validate',)})
     def test_get_parameters_without_reference(self):
-        template = self.stack_templates.first()
-        environment = self.stack_environments.first()
-        # assert parameters still return
-        self.assertEqual(1,1)
+        template = self.ref_templates.first()
+        environment = self.ref_environments.first()
+        mock_parameters = { "Parameters": {} }
+
+        api.heat.template_validate(IsA(http.HttpRequest),
+            template=template.data, environment=environment.data, files={})\
+            .AndReturn((mock_parameters))
+        self.mox.ReplayAll()
+
+        form_data = { 'template': template.data,
+                      'environment': environment.data,
+                      'files': {} }
+
+        url = reverse('horizon:project:stacks:parameters')
+        res = self.client.post(url, json.dumps(form_data),
+            content_type="application/json")
+
+        parameters = json.loads(res.content)
+        self.assertEquals(parameters['Parameters']['stack_name']['Label'], 'Stack Name')
 
 
-
+    @test.create_stubs({api.heat: ('template_validate',)})
     def test_get_parameters(self):
-        template = self.stack_templates.first()
-        environment = self.stack_environments.first()
-        # assert some params returned
-        self.assertEqual(1,1)
+        template = self.ref_templates.first()
+        environment = self.ref_environments.first()
+        reference = self.ref_templates.list()[1]
+        reference_data = { 'reference_one.yaml': reference.data }
+        mock_parameters = { "Parameters": {} }
+
+        api.heat.template_validate(IsA(http.HttpRequest),
+                                    template=template.data,
+                                    environment=environment.data,
+                                    files=reference_data)\
+            .AndReturn((mock_parameters))
+
+        self.mox.ReplayAll()
+
+        form_data = { 'template': template.data,
+                      'environment': environment.data,
+                      'files': reference_data }
+
+        url = reverse('horizon:project:stacks:parameters')
+        res = self.client.post(url, json.dumps(form_data),
+            content_type="application/json")
+
+        parameters = json.loads(res.content)
+        self.assertEquals(parameters['Parameters']['stack_name']['Label'], 'Stack Name')
 
 
-    def test_invalid_template(self):
-        template = self.stack_templates.first()
-        environment = self.stack_environments.first()
-        # assert exception raised about invalid template
-        self.assertEqual(1,1)
+    @test.create_stubs({api.heat: ('stack_create',)})
+    def test_launch_stack(self):
+        template = self.ref_templates.first()
+        environment = self.ref_environments.first()
+        reference = self.ref_templates.list()[1]
+        reference_data = { 'reference_one.yaml': reference.data }
 
+        fields = {
+            'stack_name': 'Test Stack 1',
+            'timeout_mins': 60,
+            'disable_rollback': False,
+            'password': 'password'
+        }
 
-    def test_invalid_environment(self):
-        template = self.stack_templates.first()
-        environment = self.stack_environments.first()
+        fields['environment'] = environment.data
+        fields['files'] = reference_data
+        fields['template'] = template.data
+        fields['parameters'] = {}
 
+        api.heat.stack_create(IsA(http.HttpRequest), **fields)
+        self.mox.ReplayAll()
+
+        parameter_form_data = [
+            { 'label': 'Stack Name', 'value': 'Test Stack 1' },
+            { 'label': 'Creation Timeout (minutes)', 'value': 60 },
+            { 'label': 'Rollback On Failure', 'value': True },
+            { 'label': 'Admin Password', 'value': 'password' },
+        ]
+
+        form_data = { 'template': template.data,
+                      'environment': environment.data,
+                      'files': reference_data,
+                      'parameters': parameter_form_data }
+
+        url = reverse('horizon:project:stacks:launch_two')
+        res = self.client.post(url, json.dumps(form_data),
+            content_type="application/json")
+
+        self.assertEquals(json.loads(res.content), True)
 
     @test.create_stubs({api.heat: ('find_references',)})
     def test_get_empty_references(self):

@@ -299,7 +299,7 @@ class LaunchStackView(generic.View):
             fields = self.fields_from_request(self.request)
             api.heat.stack_create(self.request, **fields)
             messages.success(request, _("Stack creation started."))
-            return True
+            return HttpResponse(json.dumps(True), content_type='application/json')
         except Exception:
             LOG.exception('exception')
             exceptions.handle(request)
@@ -363,6 +363,6 @@ class ParametersView(generic.View):
         template, env, files = self.make_params_for_validate(body)
         validated = api.heat.template_validate(self.request, template=template, environment=env, files=files)
         params = self.add_base_params(validated)
-        LOG.error("References from heat api:")
+        LOG.error("Parameters from heat api:")
         LOG.error(params)
         return HttpResponse(json.dumps(params), content_type='application/json')

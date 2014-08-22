@@ -226,8 +226,8 @@ angular.module('hz').controller({
               return {
                   environment:  HeatFileService.getFileData(launchStack.baseFiles[1]),
                   template:  HeatFileService.getFileData(launchStack.baseFiles[0]),
-                  files: makeFiles(launchStack.references),
-                  parameters: makeParameters(launchStack.parameters)
+                  files: HeatFileService.makeFiles(launchStack.references),
+                  parameters: HeatFileService.makeParameters(launchStack.parameters)
               };
           }
 

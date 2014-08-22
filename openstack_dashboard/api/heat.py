@@ -175,5 +175,6 @@ def resource_metadata_get(request, stack_id, resource_name):
 def template_validate(request, **kwargs):
     return heatclient(request).stacks.validate(**kwargs)
 
+
 def find_references(request, template, environment=None):
     return template_utils.process_raw_environment_and_files(template=template, raw_env=environment)
