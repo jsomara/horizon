@@ -27,20 +27,12 @@ from openstack_dashboard.dashboards.project.stacks import mappings
 
 
 class LaunchStack(tables.LinkAction):
-    name = "launch"
-    verbose_name = _("Launch Stack")
-    url = "horizon:project:stacks:select_template"
-    classes = ("ajax-modal",)
-    icon = "plus"
-    policy_rules = (("orchestration", "cloudformation:CreateStack"),)
-
-
-class LaunchStackAngular(tables.LinkAction):
     name = "launch2"
-    verbose_name = _("Launch Stack w/ Angular")
+    verbose_name = _("Launch Stack")
     url = "#"
     classes = ("btn-launch")
     policy_rules = (("orchestration", "cloudformation:CreateStack"),)
+    icon = "plus"
     attrs = {'data-ng-click': 'open()'}
 
 
@@ -117,7 +109,7 @@ class StacksTable(tables.DataTable):
         pagination_param = 'stack_marker'
         status_columns = ["status", ]
         row_class = StacksUpdateRow
-        table_actions = (LaunchStack, LaunchStackAngular, DeleteStack,)
+        table_actions = (LaunchStack, DeleteStack,)
         row_actions = (DeleteStack,
                        ChangeStackTemplate)
 
