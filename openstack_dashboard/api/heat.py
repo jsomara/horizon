@@ -17,7 +17,8 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from heatclient import client as heat_client
-from heatclient.common import template_utils
+from heatclient.common import environment_format
+# from heatclient.common import template_utils
 
 from horizon.utils import functions as utils
 
@@ -191,5 +192,20 @@ def template_validate(request, **kwargs):
 
 
 def find_references(request, template, environment=None):
-    return template_utils.process_raw_environment_and_files(
-        template=template, raw_env=environment)
+    # TODO(jomara) add to propert heat template_utils
+    # return template_utils.process_raw_environment_and_files(
+    #    template=template, raw_env=environment)
+    return _process_raw_environment_and_files(template=template,
+                                              raw_env=environment)
+
+
+def _process_raw_environment_and_files(template=None, raw_env=None):
+
+    files = {}
+    env = {}
+
+    if raw_env:
+        env = environment_format.parse(raw_env)
+        files = env.get('resource_registry').values()
+
+    return files, env
