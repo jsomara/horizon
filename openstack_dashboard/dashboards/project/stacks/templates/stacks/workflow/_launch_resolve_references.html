@@ -4,10 +4,10 @@
     {% trans "Step 2 " %} - {% trans "Resolve Environment References" %}
   </div>
   <div class="row">
-      <div class="col-sm-6">
-           <div class="form-horizontal" ng-form="SelectTemplateForm" ng-controller="ResolveReferencesCtrl">
+      <div class="col-sm-4">
+           <div ng-form="SelectTemplateForm" ng-controller="ResolveReferencesCtrl">
               <fieldset>
-                <div class="control-group form-field clearfix required">
+                <div class="control-group required">
                     <div ng-repeat="file in launchStack.references">
                         <div data-heat-data-upload data-file="file"></div>
                     </div>

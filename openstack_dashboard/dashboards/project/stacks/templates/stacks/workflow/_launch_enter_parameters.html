@@ -4,22 +4,20 @@
     {% trans "Step 3 " %} - {% trans "Enter Stack Parameters" %}
   </div>
      <div class="row">
-          <div class="col-sm-6">
-               <div class="form-horizontal " ng-form="ParametersForm" ng-controller="ParametersCtrl">
+          <div class="col-sm-4">
+               <div ng-form="ParametersForm" ng-controller="ParametersCtrl">
                   <fieldset>
-                    <div class="control-group form-field clearfix" ng-repeat="param in launchStack.parameters">
-                       <label>{$ param.label $}</label>
+                    <div class="control-group" ng-repeat="param in launchStack.parameters">
+                       <label class="control-label">{$ param.label $}</label>
                        <span class="help-block" style="display: none;"> {$ param.description $}  </span>
-                       <div class="input">
-                          <input name="'{$ param.label $}'" ng-model="param.value"/>
-                       </div>
+                       <input class='form-control' name="'{$ param.label $}'" ng-model="param.value"/>
                     </div>
                   </fieldset>
                </div>
           </div>
           <div class="col-sm-6">
-             <h3>{% trans "Step 1" %} - {% trans "Select Template & Environment" %}</h3>
-             {% blocktrans %} Use one of the available template source options to specify the template to be used in creating this stack.{% endblocktrans %}
+             <h3>{% trans "Step 3" %} - {% trans "Enter Template Parameters" %}</h3>
+             {% blocktrans %}  Enter parameter values for your template. {% endblocktrans %}
           </div>
     </div>
 </div>

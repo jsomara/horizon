@@ -48,11 +48,11 @@ angular.module('hz').directive({
                  };
             }],
             template:
-               '<div class="control-group form-field clearfix" ng-class="{true: \'required\' }[file.required]">\n' +
-                    '<label for="id_{$file.value$}_source">{$file.label$} Source:</label>\n' +
+               '<div class="form-group" ng-class="{true: \'required\' }[file.required]">\n' +
+                    '<label class="control-label" for="id_{$file.value$}_source">{$file.label$} Source:</label>\n' +
                     '<span class="help-block" style="display: none;">   </span>\n' +
                     '<div class="input">\n' +
-                        '<select class="switchable"\n' +
+                        '<select class="switchable form-control"\n' +
                                 'data-slug="{{file.value}}_source"\n' +
                                 'id="id_{{file.value}}_source"\n' +
                                 'name="{{file.value}}_source"\n' +
@@ -62,18 +62,18 @@ angular.module('hz').directive({
                         '</select>\n' +
                     '</div>\n' +
                 '</div>\n' +
-                '<div class="control-group form-field clearfix" ng-show="file.source === \'file\'">\n' +
-                    '<label for="id_{$ file.value $}_upload">{$ file.label $} File:</label>\n' +
+                '<div class="form-group" ng-show="file.source === \'file\'">\n' +
+                    '<label class="control-label" for="id_{$ file.value $}_upload">{$ file.label $} File:</label>\n' +
                     '<span class="help-block" style="display: none;"> A local {$ file.value $} to upload.  </span>\n' +
                     '<div class="input">\n' +
-                      '<input class="switched" name="{$ file.value $}_upload" type="file" ng-file-select="onFileSelect($files,file.upload)">\n' +
+                      '<input class="switchedl" name="{$ file.value $}_upload" type="file" ng-file-select="onFileSelect($files,file.upload)">\n' +
                     '</div>\n' +
                 '</div>\n'+
-                '<div class="control-group form-field clearfix" ng-show="file.source === \'raw\'">\n ' +
-                    '<label for="id_{$ file.value $}_data">{$ file.label$} Data:</label>\n' +
+                '<div class="form-group " ng-show="file.source === \'raw\'">\n ' +
+                    '<label class="control-label" for="id_{$ file.value $}_data">{$ file.label$} Data:</label>\n' +
                     '<span class="help-block" style="display: none;"> The raw contents of the {$ file.value $}.  </span>\n ' +
                     '<div class="input">\n ' +
-                      '<textarea class="switched" cols="40" ng-model="file.raw" name="{$ file.value $}_data" rows="10"></textarea>\n ' +
+                      '<textarea class="form-control switched" cols="40" ng-model="file.raw" name="{$ file.value $}_data" rows="10"></textarea>\n ' +
                     '</div>\n ' +
                 '</div>\n',
 
