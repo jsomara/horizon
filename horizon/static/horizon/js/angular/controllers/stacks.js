@@ -19,7 +19,6 @@ angular.module('hz').factory
              });
 
              return StackReferences;
-
         }]);
 
 angular.module('hz').factory
@@ -49,7 +48,7 @@ angular.module('hz').service
         return {
           start : function () {
             var modalInstance = $modal.open({
-              windowClass: 'fullscreen launch-instance in',
+              windowClass: 'in',
               keyboard: false,
               backdrop: 'static',
               templateUrl: '/project/stacks/launchTemplate',
@@ -58,7 +57,8 @@ angular.module('hz').service
                   return $http.get('/project/stacks/launch_two');
                 }
               },
-              controller: 'ModalLaunchStackCtrl'
+              controller: 'ModalLaunchStackCtrl',
+              size: 'lg'
             });
 
             modalInstance.result.then(function (success) {
