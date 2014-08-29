@@ -3,22 +3,23 @@
   <div data-tab-heading ng-class="{done: !tabs[2].active && tabs[2].valid}" class="heading">
     {% trans "Step 3 " %} - {% trans "Enter Stack Parameters" %}
   </div>
-  <div class="left">
-     <div class="form-horizontal row-fluid" ng-form="ParametersForm" ng-controller="ParametersCtrl">
-          <fieldset>
-            <div class="control-group form-field clearfix" ng-repeat="param in launchStack.parameters">
-               <label>{$ param.label $}</label>
-               <span class="help-block" style="display: none;"> {$ param.description $}  </span>
-               <div class="input">
-                  <input name="'{$ param.label $}'" ng-model="param.value"/>
+     <div class="row">
+          <div class="col-sm-6">
+               <div class="form-horizontal " ng-form="ParametersForm" ng-controller="ParametersCtrl">
+                  <fieldset>
+                    <div class="control-group form-field clearfix" ng-repeat="param in launchStack.parameters">
+                       <label>{$ param.label $}</label>
+                       <span class="help-block" style="display: none;"> {$ param.description $}  </span>
+                       <div class="input">
+                          <input name="'{$ param.label $}'" ng-model="param.value"/>
+                       </div>
+                    </div>
+                  </fieldset>
                </div>
-            </div>
-          </fieldset>
-      </div>
-  </div>
-  <div class="span4">
-      <h3>{% trans "Step 3" %} - {% trans "Enter Parameters" %}</h3>
-      {% blocktrans %} Enter parameter values for your template.{% endblocktrans %}
-  </div>
-
+          </div>
+          <div class="col-sm-6">
+             <h3>{% trans "Step 1" %} - {% trans "Select Template & Environment" %}</h3>
+             {% blocktrans %} Use one of the available template source options to specify the template to be used in creating this stack.{% endblocktrans %}
+          </div>
+    </div>
 </div>
