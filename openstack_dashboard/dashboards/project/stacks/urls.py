@@ -12,7 +12,7 @@
 
 from django.conf.urls import patterns  # noqa
 from django.conf.urls import url  # noqa
-from django.views.generic import TemplateView
+from django.views import generic
 
 from openstack_dashboard.dashboards.project.stacks import views
 
@@ -22,7 +22,6 @@ urlpatterns = patterns(
     url(r'^select_template$',
         views.SelectTemplateView.as_view(),
         name='select_template'),
-    url(r'^launch$', views.CreateStackView.as_view(), name='launch'),
     url(r'^stack/(?P<stack_id>[^/]+)/$',
         views.DetailView.as_view(), name='detail'),
     url(r'^(?P<stack_id>[^/]+)/change_template$',
@@ -33,11 +32,11 @@ urlpatterns = patterns(
         views.ResourceView.as_view(), name='resource'),
     url(r'^get_d3_data/(?P<stack_id>[^/]+)/$',
         views.JSONView.as_view(), name='d3_data'),
-    url(r'^launch_two$', views.LaunchStackView.as_view(), name='launch_two'),
+    url(r'^launch$', views.LaunchStackView.as_view(), name='launch'),
     url(r'^parameters$', views.ParametersView.as_view(), name='parameters'),
     url(r'^references$', views.ReferencesView.as_view(), name='references'),
     url(r'^launchTemplate$',
-        TemplateView.as_view(
+        generic.TemplateView.as_view(
             template_name='project/stacks/workflow/launch.html'),
         name='launchTemplate'),
 )

@@ -301,8 +301,6 @@ class LaunchStackView(generic.View):
         fields['template'] = body['template']
         fields['files'] = body['files']
 
-        LOG.error('Compiled fields')
-        LOG.error(fields)
         return fields
 
     def post(self, request):
@@ -312,9 +310,10 @@ class LaunchStackView(generic.View):
             messages.success(request, _("Stack creation started."))
             return HttpResponse(json.dumps(True),
                                 content_type='application/json')
-        except Exception:
-            LOG.exception('exception')
-            exceptions.handle(request)
+        except Exception as e:
+            return HttpResponse(e.message,
+                                content_type='application/json',
+                                status=500)
 
 
 class ReferencesView(generic.View):
@@ -328,8 +327,6 @@ class ReferencesView(generic.View):
             raise Exception("Template is required")
 
         files, env = api.heat.find_references(request, template, environment)
-        LOG.error("References from heat api:")
-        LOG.error(files)
         return HttpResponse(json.dumps(files), content_type='application/json')
 
 
@@ -380,7 +377,5 @@ class ParametersView(generic.View):
             environment=env,
             files=files)
         params = self.add_base_params(validated)
-        LOG.error("Parameters from heat api:")
-        LOG.error(params)
         return HttpResponse(json.dumps(params),
                             content_type='application/json')

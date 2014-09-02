@@ -212,109 +212,6 @@ class StackTests(test.TestCase):
         self.assertEqual(len(res.context['stacks_table'].data),
                          settings.API_RESULT_PAGE_SIZE)
 
-    @test.create_stubs({api.heat: ('stack_create', 'template_validate')})
-    def test_launch_stack(self):
-        template = self.stack_templates.first()
-        stack = self.stacks.first()
-
-        api.heat.template_validate(IsA(http.HttpRequest),
-                                   template=template.data) \
-           .AndReturn(json.loads(template.validate))
-
-        api.heat.stack_create(IsA(http.HttpRequest),
-                              stack_name=stack.stack_name,
-                              timeout_mins=60,
-                              disable_rollback=True,
-                              template=template.data,
-                              parameters=IsA(dict),
-                              password='password')
-
-        self.mox.ReplayAll()
-
-        url = reverse('horizon:project:stacks:select_template')
-        res = self.client.get(url)
-        self.assertTemplateUsed(res, 'project/stacks/select_template.html')
-
-        form_data = {'template_source': 'raw',
-                     'template_data': template.data,
-                     'method': forms.TemplateForm.__name__}
-        res = self.client.post(url, form_data)
-        self.assertTemplateUsed(res, 'project/stacks/create.html')
-
-        url = reverse('horizon:project:stacks:launch')
-        form_data = {'template_source': 'raw',
-                     'template_data': template.data,
-                     'password': 'password',
-                     'parameters': template.validate,
-                     'stack_name': stack.stack_name,
-                     "timeout_mins": 60,
-                     "disable_rollback": True,
-                     "__param_DBUsername": "admin",
-                     "__param_LinuxDistribution": "F17",
-                     "__param_InstanceType": "m1.small",
-                     "__param_KeyName": "test",
-                     "__param_DBPassword": "admin",
-                     "__param_DBRootPassword": "admin",
-                     "__param_DBName": "wordpress",
-                     'method': forms.CreateStackForm.__name__}
-        res = self.client.post(url, form_data)
-        self.assertRedirectsNoFollow(res, INDEX_URL)
-
-    @test.create_stubs({api.heat: ('stack_create', 'template_validate')})
-    def test_launch_stackwith_environment(self):
-        template = self.stack_templates.first()
-        environment = self.stack_environments.first()
-        stack = self.stacks.first()
-
-        api.heat.template_validate(IsA(http.HttpRequest),
-                                   template=template.data,
-                                   environment=environment.data) \
-           .AndReturn(json.loads(template.validate))
-
-        api.heat.stack_create(IsA(http.HttpRequest),
-                              stack_name=stack.stack_name,
-                              timeout_mins=60,
-                              disable_rollback=True,
-                              template=template.data,
-                              environment=environment.data,
-                              parameters=IsA(dict),
-                              password='password')
-
-        self.mox.ReplayAll()
-
-        url = reverse('horizon:project:stacks:select_template')
-        res = self.client.get(url)
-        self.assertTemplateUsed(res, 'project/stacks/select_template.html')
-
-        form_data = {'template_source': 'raw',
-                     'template_data': template.data,
-                     'environment_source': 'raw',
-                     'environment_data': environment.data,
-                     'method': forms.TemplateForm.__name__}
-        res = self.client.post(url, form_data)
-        self.assertTemplateUsed(res, 'project/stacks/create.html')
-
-        url = reverse('horizon:project:stacks:launch')
-        form_data = {'template_source': 'raw',
-                     'template_data': template.data,
-                     'environment_source': 'raw',
-                     'environment_data': environment.data,
-                     'password': 'password',
-                     'parameters': template.validate,
-                     'stack_name': stack.stack_name,
-                     "timeout_mins": 60,
-                     "disable_rollback": True,
-                     "__param_DBUsername": "admin",
-                     "__param_LinuxDistribution": "F17",
-                     "__param_InstanceType": "m1.small",
-                     "__param_KeyName": "test",
-                     "__param_DBPassword": "admin",
-                     "__param_DBRootPassword": "admin",
-                     "__param_DBName": "wordpress",
-                     'method': forms.CreateStackForm.__name__}
-        res = self.client.post(url, form_data)
-        self.assertRedirectsNoFollow(res, INDEX_URL)
-
     @test.create_stubs({api.heat: ('stack_update', 'stack_get',
                                     'template_get', 'template_validate')})
     def test_edit_stack_template(self):
@@ -383,37 +280,6 @@ class StackTests(test.TestCase):
                      'method': forms.EditStackForm.__name__}
         res = self.client.post(url, form_data)
         self.assertRedirectsNoFollow(res, INDEX_URL)
-
-    def test_launch_stack_form_invalid_names_fail(self):
-        self._test_launch_stack_invalid_name('2_StartWithDigit')
-        self._test_launch_stack_invalid_name('_StartWithUnderscore')
-        self._test_launch_stack_invalid_name('.StartWithPoint')
-
-    def _test_launch_stack_invalid_name(self, name):
-        template = self.stack_templates.first()
-        url = reverse('horizon:project:stacks:launch')
-        form_data = {'template_source': 'raw',
-                     'template_data': template.data,
-                     'password': 'password',
-                     'parameters': template.validate,
-                     'stack_name': name,
-                     "timeout_mins": 60,
-                     "disable_rollback": True,
-                     "__param_DBUsername": "admin",
-                     "__param_LinuxDistribution": "F17",
-                     "__param_InstanceType": "m1.small",
-                     "__param_KeyName": "test",
-                     "__param_DBPassword": "admin",
-                     "__param_DBRootPassword": "admin",
-                     "__param_DBName": "wordpress",
-                     'method': forms.CreateStackForm.__name__}
-
-        res = self.client.post(url, form_data)
-        error = ('Name must start with a letter and may only contain letters, '
-                 'numbers, underscores, periods and hyphens.')
-
-        self.assertFormErrors(res, 1)
-        self.assertFormError(res, "form", 'stack_name', error)
 
     @test.create_stubs({api.heat: ('template_validate',)})
     def test_get_parameters_without_reference(self):
@@ -498,7 +364,7 @@ class StackTests(test.TestCase):
                       'files': reference_data,
                       'parameters': parameter_form_data}
 
-        url = reverse('horizon:project:stacks:launch_two')
+        url = reverse('horizon:project:stacks:launch')
         res = self.client.post(url, json.dumps(form_data),
             content_type="application/json")
 

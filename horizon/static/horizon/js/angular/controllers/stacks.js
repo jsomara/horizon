@@ -35,7 +35,7 @@ angular.module('hz').factory
     ('StackLaunch', ['$resource',
         function ($resource) {
 
-             var StackLaunchFactory = $resource('/project/stacks/launch_two', {}, {
+             var StackLaunchFactory = $resource('/project/stacks/launch', {}, {
                 launch: { method: 'POST' }
             });
 
@@ -54,7 +54,7 @@ angular.module('hz').service
               templateUrl: '/project/stacks/launchTemplate',
               resolve: {
                 response: function () {
-                  return $http.get('/project/stacks/launch_two');
+                  return $http.get('/project/stacks/launch');
                 }
               },
               controller: 'ModalLaunchStackCtrl',
@@ -213,78 +213,81 @@ angular.module('hz').controller({
     ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout','response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages', 'HeatFileService',
         function ($scope, $modalInstance, $timeout, response, ParameterService, ReferenceService, StackLaunch, hzMessages, HeatFileService) {
 
-          // query required parameters list from horizon
-          var loadParameters = function() {
-              ParameterService.getParameters($scope.launchStack, $scope);
-          };
+            var loadParameters, resolveReferences, makeFinalParams, launchStackRemote;
 
-          var resolveReferences = function() {
-              ReferenceService.getReferences($scope.launchStack, $scope);
-          };
+            // query required parameters list from horizon
+            loadParameters = function() {
+                ParameterService.getParameters($scope.launchStack, $scope);
+            };
 
-          var makeFinalParams = function(launchStack) {
-              return {
-                  environment:  HeatFileService.getFileData(launchStack.baseFiles[1]),
-                  template:  HeatFileService.getFileData(launchStack.baseFiles[0]),
-                  files: HeatFileService.makeFiles(launchStack.references),
-                  parameters: HeatFileService.makeParameters(launchStack.parameters)
-              };
-          };
+            resolveReferences = function() {
+                ReferenceService.getReferences($scope.launchStack, $scope);
+            };
 
-          $scope.response = response.data;
-          $scope.data = [];
-          $scope.tabs = [
-            {active: false, valid: false, recheck:true},
-            {active: false, valid: false, recheck:true, disabled:true},
-            {active: false, valid: false, recheck:true, disabled:true}];
-          $scope.index = 0;
+            makeFinalParams = function(launchStack) {
+                return {
+                    environment:  HeatFileService.getFileData(launchStack.baseFiles[1]),
+                    template:  HeatFileService.getFileData(launchStack.baseFiles[0]),
+                    files: HeatFileService.makeFiles(launchStack.references),
+                    parameters: HeatFileService.makeParameters(launchStack.parameters)
+                };
+            };
 
-          $scope.next = function () {
-            $scope.select($scope.index + 1);
-          };
+            $scope.response = response.data;
+            $scope.data = [];
+            $scope.tabs = [
+                {active: false, valid: false, recheck:true},
+                {active: false, valid: false, recheck:true, disabled:true},
+                {active: false, valid: false, recheck:true, disabled:true}];
+            $scope.index = 0;
 
-          $scope.launchStack = { baseFiles: [
+            $scope.next = function () {
+                $scope.select($scope.index + 1);
+            };
+
+            $scope.launchStack = { baseFiles: [
                 { label: 'Template', value: 'template', source: 'file', required: true },
                 { label: 'Environment', value: 'environment', source: 'file', required: false }
             ]};
 
-          $scope.select = function (index) {
-              if (!$scope.tabs[index].disabled && $scope.index !== index) {
-                 if (index === 1 && $scope.tabs[0].recheck) {
-                     resolveReferences();
-                     $scope.tabs[0].recheck = false;
-                 } else if (index === 2 && $scope.tabs[1].recheck) {
-                     loadParameters();
-                     $scope.tabs[1].recheck = false;
-                 }
-                 $timeout(function () {
-                     $scope.index = index;
-                     angular.forEach($scope.tabs, function (tab, i) {
-                         $scope.tabs[i].active = (i === index);
-                     });
-                 });
-              }
-
-          };
-
-          $scope.launch = function (launchStackForm) {
-            if (launchStackForm.$invalid) {
-                //
-            } else {
-                var launch = StackLaunch.launch(makeFinalParams($scope.launchStack));
-                launch.$promise.then(
-                    function(response) {
-                       $modalInstance.close();
-                    }, function(error) {
-                       hzMessages.alert(error.data, 'error');
+            $scope.select = function (index) {
+                if (!$scope.tabs[index].disabled && $scope.index !== index) {
+                    if (index === 1 && $scope.tabs[0].recheck) {
+                        resolveReferences();
+                        $scope.tabs[0].recheck = false;
+                    } else if (index === 2 && $scope.tabs[1].recheck) {
+                        loadParameters();
+                        $scope.tabs[1].recheck = false;
                     }
-                )
-            }
-          };
+                    $timeout(function () {
+                        $scope.index = index;
+                        angular.forEach($scope.tabs, function (tab, i) {
+                            $scope.tabs[i].active = (i === index);
+                        });
+                    });
+                }
 
-          $scope.cancel = function () {
-            $modalInstance.dismiss('cancel');
-          };
+            };
+
+            $scope.launch = function (launchStackForm) {
+                if (launchStackForm.$invalid) {
+                    //
+                } else {
+                    var launch = StackLaunch.launch(makeFinalParams($scope.launchStack));
+                    launch.$promise.then(
+                        function(response) {
+                            console.log("This call succeeded!");
+                           $modalInstance.close();
+                        }, function(error) {
+                            console.log("This call failed! )internal failure)")
+                           hzMessages.alert(error.error.message, 'error');
+                        });
+                }
+            };
+
+            $scope.cancel = function () {
+                $modalInstance.dismiss('cancel');
+            };
         }],
 
     SelectTemplateCtrl: ['$scope',
