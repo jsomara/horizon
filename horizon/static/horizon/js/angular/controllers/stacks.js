@@ -1,17 +1,30 @@
 /*global angular, gettext*/
 'use strict';
 
+var dependencies = ['hz.conf',
+                    'hz.utils',
+                    'hz.messages',
+                    'ui.bootstrap',
+                    'ngAnimate',
+                    'ngSanitize',
+                    'ngCookies',
+                    'ngResource',
+                    'angularFileUpload'];
+
+var heat = angular.module('hz.heat', dependencies)
+
 var validateInput = function(files) {
      var valid = true;
      angular.forEach(files, function(file) {
          valid = valid && (
-             (file.upload !== undefined) ||
-             (file.raw !== undefined && file.raw !== ''));
+
+             (typeof file.upload !== 'undefined') ||
+             (typeof file.raw !== 'undefined' && file.raw !== ''));
      })
      return valid;
 };
 
-angular.module('hz').factory
+heat.factory
     ('StackReferences', ['$resource',
         function ($resource) {
              var StackReferences = $resource('/project/stacks/references', {}, {
@@ -19,9 +32,9 @@ angular.module('hz').factory
              });
 
              return StackReferences;
-        }]);
+        }])
 
-angular.module('hz').factory
+.factory
     ('StackParameters', ['$resource',
         function ($resource) {
             var StackParameters= $resource('/project/stacks/parameters', {}, {
@@ -29,9 +42,9 @@ angular.module('hz').factory
             });
 
             return StackParameters;
-        }]);
+        }])
 
-angular.module('hz').factory
+.factory
     ('StackLaunch', ['$resource',
         function ($resource) {
 
@@ -40,9 +53,9 @@ angular.module('hz').factory
             });
 
             return StackLaunchFactory;
-        }]);
+        }])
 
-angular.module('hz').service
+.service
     ('launchStackWorkflow', ['hzConfig', 'hzMessages', '$modal', '$http',
       function (hzConfig, hzMessages, $modal, $http) {
         return {
@@ -73,16 +86,16 @@ angular.module('hz').service
             });
           }
         };
-      }]);
+      }])
 
-angular.module('hz').service
+.service
 ('HeatFileService', [
     function () {
         var self = this;
 
         self.getFileData = function(file) {
             var contents;
-            if (file.source === 'file' && file.upload !== undefined) {
+            if (file.source === 'file' && typeof file.upload !== 'undefined') {
                 contents = file.upload[0].data;
             } else if (file.source === 'raw') {
                 contents = file.raw;
@@ -103,7 +116,7 @@ angular.module('hz').service
         self.makeParameters = function(parameters) {
             return parameters;
         };
-    }]);
+    }])
 
 angular.module('hz').service
     ('ParameterService', ['StackParameters', 'hzMessages', 'HeatFileService',
@@ -149,7 +162,7 @@ angular.module('hz').service
                 );
             }
         }
-}]);
+}])
 
 angular.module('hz').service
     ('ReferenceService', ['StackReferences', 'hzMessages', 'HeatFileService',
@@ -190,14 +203,14 @@ angular.module('hz').service
                   references.$promise.then(
                       function(references){
                           createReferences(references, launchStack);
-                          if (launchStack.references === undefined || launchStack.references.size === 0) {
+                          if (typeof launchStack.references === 'undefined' || launchStack.references.size === 0) {
                               // no references, move on
                               scope.select(2);
                           }
                       }, function(error) {
                           var msg = gettext("An error occurred parsing your template. Please try another one");
 
-                          if (error.data !== undefined) {
+                          if (typeof error.data !== 'undefined') {
                               msg = error.data;
                           }
 
@@ -207,9 +220,9 @@ angular.module('hz').service
                   );
               }
           }
-      }]);
+      }])
 
-angular.module('hz').controller({
+.controller({
     ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout','response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages', 'HeatFileService',
         function ($scope, $modalInstance, $timeout, response, ParameterService, ReferenceService, StackLaunch, hzMessages, HeatFileService) {
 

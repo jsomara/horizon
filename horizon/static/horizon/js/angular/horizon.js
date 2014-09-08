@@ -1,6 +1,7 @@
 var horizon_dependencies = ['hz.conf',
                             'hz.utils',
                             'hz.messages',
+                            'hz.heat',
                             'ui.bootstrap',
                             'ngAnimate',
                             'ngSanitize',
