@@ -27,6 +27,7 @@ import xstatic.pkg.angular
 import xstatic.pkg.angular_animate
 import xstatic.pkg.angular_bootstrap
 import xstatic.pkg.angular_cookies
+import xstatic.pkg.angular_fileupload
 import xstatic.pkg.angular_mock
 import xstatic.pkg.angular_sanitize
 import xstatic.pkg.d3
@@ -163,6 +164,8 @@ STATICFILES_DIRS = (
         .base_dir),
     ('horizon/lib/angular',
         xstatic.main.XStatic(xstatic.pkg.angular_cookies).base_dir),
+    ('horizon/lib/angular',
+        xstatic.main.XStatic(xstatic.pkg.angular_fileupload).base_dir),
     ('horizon/lib/angular',
         xstatic.main.XStatic(xstatic.pkg.angular_mock).base_dir),
     ('horizon/lib/angular', xstatic.main.XStatic(xstatic.pkg.angular_sanitize)
