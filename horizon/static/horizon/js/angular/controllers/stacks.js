@@ -11,7 +11,7 @@ var dependencies = ['hz.conf',
                     'ngResource',
                     'angularFileUpload'];
 
-var heat = angular.module('hz.heat', dependencies)
+var heat = angular.module('hz.heat', dependencies);
 
 var validateInput = function(files) {
      var valid = true;
@@ -24,35 +24,42 @@ var validateInput = function(files) {
      return valid;
 };
 
-heat.factory
-    ('StackReferences', ['$resource',
-        function ($resource) {
-             var StackReferences = $resource('/project/stacks/references', {}, {
-                 references: { method: 'POST', isArray: true }
-             });
+heat.service
+    ('StackReferences', ['$http',
+        function ($http) {
 
-             return StackReferences;
+            var self = this;
+
+            self.references = function(payload) {
+                var url = '/project/stacks/references';
+                return $http.post(url, payload);
+            };
         }])
 
-.factory
-    ('StackParameters', ['$resource',
-        function ($resource) {
-            var StackParameters= $resource('/project/stacks/parameters', {}, {
-                parameters: { method: 'POST' }
-            });
+.service
+    ('StackParameters', ['$http',
+        function ($http) {
 
-            return StackParameters;
+            var self = this;
+
+            self.parameters = function(payload) {
+                var url = '/project/stacks/parameters';
+                return $http.post(url, payload);
+            };
+
         }])
 
-.factory
-    ('StackLaunch', ['$resource',
-        function ($resource) {
+.service
+    ('StackLaunch', ['$http',
+        function ($http) {
 
-             var StackLaunchFactory = $resource('/project/stacks/launch', {}, {
-                launch: { method: 'POST' }
-            });
+            var self = this;
 
-            return StackLaunchFactory;
+            self.launch = function(payload) {
+                var url = '/project/stacks/launch';
+                return $http.post(url, payload);
+            };
+
         }])
 
 .service
@@ -145,21 +152,19 @@ angular.module('hz').service
             angular.forEach(parameters.Parameters, function(p) {
                 launchStack.parameters.push(fixParam(p));
             });
-
         };
 
         return {
             getParameters: function(launchStack, scope) {
                 var stackPayload = getParameterData(launchStack);
                 var parameters = StackParameters.parameters(stackPayload);
-                parameters.$promise.then(
+                parameters.success(
                   function(parameters){
                     createParameters(launchStack, parameters);
-                  }, function(error) {
+                  }).error(function(error) {
                     hzMessages.alert(error.data, 'error');
                     scope.select(1);
-                  }
-                );
+                  });
             }
         }
 }])
@@ -200,14 +205,14 @@ angular.module('hz').service
                   referenceData = getReferenceData(launchStack.baseFiles);
                   references = StackReferences.references(referenceData);
 
-                  references.$promise.then(
+                  references.success(
                       function(references){
                           createReferences(references, launchStack);
                           if (typeof launchStack.references === 'undefined' || launchStack.references.size === 0) {
                               // no references, move on
                               scope.select(2);
                           }
-                      }, function(error) {
+                      }).error(function(error) {
                           var msg = gettext("An error occurred parsing your template. Please try another one");
 
                           if (typeof error.data !== 'undefined') {
@@ -216,8 +221,7 @@ angular.module('hz').service
 
                           hzMessages.alert(msg, 'error');
                           scope.select(0);
-                      }
-                  );
+                      });
               }
           }
       }])
@@ -287,11 +291,11 @@ angular.module('hz').service
                     //
                 } else {
                     var launch = StackLaunch.launch(makeFinalParams($scope.launchStack));
-                    launch.$promise.then(
+                    launch.success(
                         function(response) {
                             console.log("This call succeeded!");
                            $modalInstance.close();
-                        }, function(error) {
+                        }).error(function(error) {
                             console.log("This call failed! )internal failure)")
                            hzMessages.alert(error.error.message, 'error');
                         });
