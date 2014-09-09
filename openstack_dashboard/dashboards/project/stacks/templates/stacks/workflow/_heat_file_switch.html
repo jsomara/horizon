@@ -1,0 +1,30 @@
+<script type="text/ng-template" id="heatFileSwitch.html">
+    <div class="form-group" ng-class="{true: 'required' }[file.required]">
+        <label class="control-label" for="id_{$file.value$}_source">{$file.label$} Source:</label>
+        <span class="help-block" style="display: none;">   </span>
+        <div class="input">
+            <select class="switchable form-control"
+                    data-slug="{{file.value}}_source"
+                    id="id_{{file.value}}_source"
+                    name="{{file.value}}_source"
+                    ng-options="value.value as value.label for value in sourceOptions"
+                    ng-model="file.source"
+                    ng-change="selectAction()">
+            </select>
+        </div>
+     </div>
+     <div class="form-group" ng-show="file.source === 'file'">
+        <label class="control-label" for="id_{$ file.value $}_upload">{$ file.label $} File:</label>
+        <span class="help-block" style="display: none;"> A local {$ file.value $} to upload.  </span>
+        <div class="input">
+            <input class="switchedl" name="{$ file.value $}_upload" type="file" ng-file-select="onFileSelect($files,file.upload)">
+        </div>
+     </div>
+     <div class="form-group " ng-show="file.source === 'raw'">
+        <label class="control-label" for="id_{$ file.value $}_data">{$ file.label$} Data:</label>
+        <span class="help-block" style="display: none;"> The raw contents of the {$ file.value $}.  </span>
+        <div class="input">
+            <textarea class="form-control switched" cols="40" ng-model="file.raw" name="{$ file.value $}_data" rows="10"></textarea>
+        </div>
+    </div>
+</script>

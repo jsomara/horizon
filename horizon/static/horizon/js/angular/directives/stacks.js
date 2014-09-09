@@ -6,8 +6,6 @@ angular.module('hz').directive({
 
         return {
             restrict: 'A',
-           // require: '^file',
-            transclude: true,
             scope: {
                 file: '='
             },
@@ -47,36 +45,7 @@ angular.module('hz').directive({
                     // $scope.upload = $upload.http({...})  see 88#issuecomment-31366487 for sample code.
                  };
             }],
-            template:
-               '<div class="form-group" ng-class="{true: \'required\' }[file.required]">\n' +
-                    '<label class="control-label" for="id_{$file.value$}_source">{$file.label$} Source:</label>\n' +
-                    '<span class="help-block" style="display: none;">   </span>\n' +
-                    '<div class="input">\n' +
-                        '<select class="switchable form-control"\n' +
-                                'data-slug="{{file.value}}_source"\n' +
-                                'id="id_{{file.value}}_source"\n' +
-                                'name="{{file.value}}_source"\n' +
-                                'ng-options="value.value as value.label for value in sourceOptions"\n' +
-                                'ng-model="file.source"\n' +
-                                'ng-change="selectAction()">\n' +
-                        '</select>\n' +
-                    '</div>\n' +
-                '</div>\n' +
-                '<div class="form-group" ng-show="file.source === \'file\'">\n' +
-                    '<label class="control-label" for="id_{$ file.value $}_upload">{$ file.label $} File:</label>\n' +
-                    '<span class="help-block" style="display: none;"> A local {$ file.value $} to upload.  </span>\n' +
-                    '<div class="input">\n' +
-                      '<input class="switchedl" name="{$ file.value $}_upload" type="file" ng-file-select="onFileSelect($files,file.upload)">\n' +
-                    '</div>\n' +
-                '</div>\n'+
-                '<div class="form-group " ng-show="file.source === \'raw\'">\n ' +
-                    '<label class="control-label" for="id_{$ file.value $}_data">{$ file.label$} Data:</label>\n' +
-                    '<span class="help-block" style="display: none;"> The raw contents of the {$ file.value $}.  </span>\n ' +
-                    '<div class="input">\n ' +
-                      '<textarea class="form-control switched" cols="40" ng-model="file.raw" name="{$ file.value $}_data" rows="10"></textarea>\n ' +
-                    '</div>\n ' +
-                '</div>\n',
-
+            templateUrl:  'heatFileSwitch.html',
             link: function (scope, element, attrs)    {
 
             }
