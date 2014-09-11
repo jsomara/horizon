@@ -3,7 +3,6 @@
 
 var dependencies = ['hz.conf',
                     'hz.utils',
-                    'hz.messages',
                     'ui.bootstrap',
                     'ngAnimate',
                     'ngSanitize',
@@ -63,8 +62,8 @@ heat.service
         }])
 
 .service
-    ('launchStackWorkflow', ['hzConfig', 'hzMessages', '$modal', '$http',
-      function (hzConfig, hzMessages, $modal, $http) {
+    ('launchStackWorkflow', ['hzConfig', 'horizon', '$modal', '$http',
+      function (hzConfig, horizon, $modal, $http) {
         return {
           start : function () {
             var modalInstance = $modal.open({
@@ -82,12 +81,12 @@ heat.service
             });
 
             modalInstance.result.then(function (success) {
-              hzMessages.alert(gettext(
+              horizon.alert(gettext(
                 'Stack: "' + success.data.name + '" successfully created'
               ), 'success');
             }, function (error) {
               if (error === 'cancel') {
-                hzMessages.alert(gettext('Launch stack has been aborted'), 'info');
+                horizon.alert(gettext('Launch stack has been aborted'), 'info');
               } else {
               }
             });
@@ -126,8 +125,8 @@ heat.service
     }])
 
 angular.module('hz').service
-    ('ParameterService', ['StackParameters', 'hzMessages', 'HeatFileService',
-    function(StackParameters, hzMessages, HeatFileService) {
+    ('ParameterService', ['StackParameters', 'horizon', 'HeatFileService',
+    function(StackParameters, horizon, HeatFileService) {
 
         var getParameterData, fixParam, createParameters;
 
@@ -162,7 +161,7 @@ angular.module('hz').service
                   function(parameters){
                     createParameters(launchStack, parameters);
                   }).error(function(error) {
-                    hzMessages.alert(error.data, 'error');
+                    horizon.alert(error.data, 'error');
                     scope.select(1);
                   });
             }
@@ -170,8 +169,8 @@ angular.module('hz').service
 }])
 
 angular.module('hz').service
-    ('ReferenceService', ['StackReferences', 'hzMessages', 'HeatFileService',
-      function (StackReferences, hzMessages, HeatFileService) {
+    ('ReferenceService', ['StackReferences', 'horizon', 'HeatFileService',
+      function (StackReferences, horizon, HeatFileService) {
 
           var getReferenceData, makeFile, createReferences;
 
@@ -219,7 +218,7 @@ angular.module('hz').service
                               msg = error.data;
                           }
 
-                          hzMessages.alert(msg, 'error');
+                          horizon.alert(msg, 'error');
                           scope.select(0);
                       });
               }
@@ -227,8 +226,8 @@ angular.module('hz').service
       }])
 
 .controller({
-    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout','response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'hzMessages', 'HeatFileService',
-        function ($scope, $modalInstance, $timeout, response, ParameterService, ReferenceService, StackLaunch, hzMessages, HeatFileService) {
+    ModalLaunchStackCtrl: ['$scope', '$modalInstance', '$timeout','response', 'ParameterService', 'ReferenceService', 'StackLaunch', 'horizon', 'HeatFileService',
+        function ($scope, $modalInstance, $timeout, response, ParameterService, ReferenceService, StackLaunch, horizon, HeatFileService) {
 
             var loadParameters, resolveReferences, makeFinalParams, launchStackRemote;
 
@@ -293,11 +292,9 @@ angular.module('hz').service
                     var launch = StackLaunch.launch(makeFinalParams($scope.launchStack));
                     launch.success(
                         function(response) {
-                            console.log("This call succeeded!");
                            $modalInstance.close();
                         }).error(function(error) {
-                            console.log("This call failed! )internal failure)")
-                           hzMessages.alert(error.error.message, 'error');
+                           horizon.alert(error.error.message, 'error');
                         });
                 }
             };
